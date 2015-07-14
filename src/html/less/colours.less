@@ -1,0 +1,50 @@
+body 
+{
+    // background-color:@black;
+   background-color:@dark;
+   // background-color:@purple;
+	
+	color:@light;
+}
+
+h1{
+	color:@grey;	
+}
+h2{
+	color:@grey;	
+}
+p{
+	color:@light;
+}
+
+a{
+	color:@accent;
+	
+	&:hover{
+		color:@accent;
+		border-bottom:1px dotted @accent;
+	}
+}
+
+
+
+.opening{
+	background-color:@accent;
+}
+
+.central{
+	
+}
+.closing{
+	background-color:@accent;
+}
+.closed{
+	background-color:transparent;
+	.opacity(0);
+}.open{
+	background-color:@black;
+	.opacity(1);
+}
+.stuck{
+	background-color:@purple;
+}

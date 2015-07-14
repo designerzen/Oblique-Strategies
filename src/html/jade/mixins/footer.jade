@@ -1,0 +1,27 @@
+include menu
+
+//- Footer block
+mixin footer
+	footer
+		article#info
+			h4 Oblique Strategies
+			h5 By <a title="Brian Eno's Homepage" href="http://brian-eno.net">Brian Eno</a> &amp; <a title="Peter Schmidt's Homepage" href="http://www.peterschmidtweb.com/">Peter Schmidt</a>
+			p.info This project is an electronic Version of the Oblique Strategies
+				
+		small 
+			<strong>Oblique Strategies</strong> &copy; 1975 - 2011 <a title="Brian Eno's Homepage" href="http://brian-eno.net">Brian Eno</a> &amp; <a title="Peter Schmidt's Homepage" href="http://www.peterschmidtweb.com/">Peter Schmidt</a>
+			
+			
+		nav 
+			ul#internal
+				+navigation()
+				
+			ul#external.social
+				h4 Connect With the Digital Me :
+				//- li: a(alt='', class='icon-pen', href='mailto:') Email
+				li: a(alt='', class='icon-twitter', href='http://twitter.com/designerzen') Twitter
+				//- li: a(alt='', class='icon-linkedin', href='') LinkedIn
+				li: a(alt='', class='icon-github', href='http://github.com/designerzen') Github
+				li: a(alt='', class='icon-pinterest', href='http://www.pinterest.com/designerzen/') Pintrest
+				//- li: a(alt='', class='icon-flickr', href='http://flickr.com/photos/designerzen/') Flickr
+				li: a(alt='', class='icon-skype', href='skype:designerzen?chat&topic=Enquiry') Skype
