@@ -1,0 +1,249 @@
+// let us add a reverse face to the card :)
+
+// Stack of cards
+ul.cards{
+	position:relative;
+
+	// Make it fit
+	width:@cardW;
+	height:@cardH;
+
+	// table breaks ff ;(
+	//display: table;
+	display:block;
+	display: table-cell;
+  vertical-align: middle;
+
+
+	.centralise-element();
+	.centralise-datum( @cardW, @cardH );
+	//margin-top: 220px ;
+
+	transform-style: preserve-3d;
+	transform-origin: 50% 50% ;
+	backface-visibility: hidden;
+
+	//z-index:99;
+	//.translateZ( -100px );	// move it back a bit for nicer spin effect
+
+	// move it back a bit for nicer spin effect
+	transform:translateZ(0);
+	// shadow
+	//.border-radius( 12px );
+	//background-color:@dark;
+	//#3L > .box-shadow(5px 5px 12px 4px @dark );
+
+	// Each individual card
+	li{
+		//.backface-visibility( hidden );
+		backface-visibility: hidden ;
+		transform-origin: 50% 50% ;
+
+		width: @cardW - @cardPX;
+		height: @cardH - @cardPY;
+
+		//.border( @dark, 1px, solid );
+		border-width:1px;
+		border-style:outset;
+		border-bottom-color:@dark;
+		border-top-color:@neutral;
+		border-left-color:@grey;
+		border-radius: 12px;
+
+		position: absolute;
+		top:0;
+		left:0;
+
+
+		//.position-tl( @cardH/2, @cardW/2 );
+		//.margins-tl( -( @cardW - @cardPX ) / 2 , -( @cardH - @cardPY ) / 2 );
+		padding: (@cardPY/2) (@cardPX/2);
+		color:@dark;
+
+
+		//background:@light url(../img/jpg/seamlesstexture29_500.jpg) repeat top left;
+		background-color:@light;
+			//background-image: url(../img/jpg/seamlesstexture1_500.jpg), url(../img/jpg/seamlesstexture29_500.jpg);
+		//background-image: url(../img/jpg/seamlesstexture29_500.jpg), url(../img/jpg/seamlesstexture3_500.jpg);
+		//background-repeat: repeat;
+		//#3L > .vertical-gradient( @light, @neutral );
+		opacity:1;
+
+		// set text to be centralised vertically
+		//display: block;
+		display: table-cell;
+		vertical-align: middle;
+		text-align: center;
+		user-select:none;
+
+		cursor: pointer;
+		-webkit-font-smoothing: antialiased;
+		-webkit-user-drag: none;
+		user-selectable:none;
+		transition :all 1s;
+	}
+
+	// This is the relaod card!
+	li.reload{
+		a{
+			display:block;
+			width:100%;
+			height:100%;
+		}
+	}
+
+}
+
+//ul.cards li:after
+/*
+ul.cards li:after{
+	content: " ";
+	.backface-visibility( hidden );
+	//background-color:@dark;
+	#3L > .vertical-gradient( @neutral, @dark );////
+	display:block;
+	//.transform( translate3d( 0, 0, -3px ) );
+	.transform( rotate3d( 180deg, 45deg, 45deg ) );
+	//.transform( translate3d( 0, 0, 2px ) rotate3d( 180deg, 0, 0  ) );rotate3d( 180deg, 0, 0  )
+	.position-tl( 0 );
+}
+
+*/
+//@random	: ~'(function(){ return Math.random(); ))';
+@random	: 1.1;
+
+// Global Loop Styles
+.looper( @_ ; @n ){
+
+}
+
+// Here we define our individual loop mixins
+// card at index @n
+.looper( show; @n ){
+	&:nth-child(@{n})
+	{
+        //z-index:(999 - @n);
+		//.translateZ( @n * 1px );
+		transform:translate3d( 0, 0, @z-offset - (@n * @gap) );
+		//.transform( translate3d( 0, 0, -@n * @gap ) );/rotateX(@n+0deg)
+	}
+}
+
+
+
+.child( show; @n ){
+	z-index:-@n;	// needed for ff
+	transform:translate3d( 0, 0, @z-offset - (@n * @gap) );
+	//.transform( translate3d( 0, 0, -@n * @gap ) );/rotateX(@n+0deg)
+}
+
+// card at index @n
+.child( hide; @n ){
+   //transform:translate3d( @cardW + @cardPX, 0, @z-offset - (@n * @gap) + 400 );
+	@rotation : 90deg;
+	transform: translate3d( 0, 2 * @cardH + 10, @z-offset-hidden - (@n * @gap) ), rotateX( @rotation );
+}
+
+// card at index @n
+.child( flip; @n ){
+   // z-index:(-2);
+	//.translateZ( @n * 1px );
+	//transform:translate3d( @cardW + @cardPX, 0, @z-offset - (@n * @gap) + 400 );
+	@rotation : 90deg;
+	transform:translate3d( 0, 2 * @cardH + 10, @z-offset-hidden - (@n * @gap) ), rotateX( @rotation );
+}
+
+// card at index @n
+.child( up; @n ){
+	@rotation : 90deg * @random;
+	transform:translate3d( 0, -4 * @cardH - 10, @z-offset-hidden - (@n * @gap) ), rotateX( -@rotation);
+}
+// card at index @n
+.child( down; @n ){
+	@rotation : 90deg * @random;
+	transform:translate3d( 0, 4 * @cardH + 10, @z-offset-hidden - (@n * @gap) ), rotateX( @rotation );
+}
+
+// card at index @n
+.child( left; @n ){
+	@rotation : 90deg * @random;
+	transform:translate3d( -2 * @cardW + 10, 0, @z-offset-hidden - (@n * @gap) ), rotateY( -@rotation );
+}
+// card at index @n
+.child( right; @n ){
+	@rotation : 90deg * @random;
+	transform:translate3d( 2 * @cardW + 10, 0, @z-offset-hidden - (@n * @gap)  ), rotateY( @rotation );
+}
+
+
+// card at index @n
+.loop-children( @name; @from:0; @to:1) when (@from < @to ){
+	&:nth-child(@{from}) {   .child( @name, @from );	}
+	.loop-children( @name,(@from + 1) , @to );	// self iterating... next iteration
+}
+
+
+// This will call the mixin "name"
+.loop-up (@name; @from:0; @to:1) when (@from < @to) {
+	.looper( @name, @from );
+	.loop-up( @name, @from + 1 , @to );	// self iterating... next iteration
+}
+
+.loop-down (@name; @from:1;@to:0) when (@from > @to) {
+	.looper( @name, @from );
+	.loop-down( @name, @from - 1 , @to );	// self iterating... next iteration
+}
+
+// Shortcuts
+.loop ( @name; @from:0; @to:1 ) {			.loop-up( @name, @from, @to ); }
+.loop ( @name, @from:0; @to:1; up )  {		.loop-up( @name, @from, @to ); }
+.loop ( @name, @from:0; @to:1; down )  {	.loop-down( @name, @from, @to ); }
+
+/* Cards in the Deck in Sequence ---------------- */
+
+// Each Card
+ul.cards li{
+	.loop-children( @class-show, 0, @quantity );	// loop through each child!
+}
+
+// Hide the card by animating out of the deck
+ul.cards li.hide{
+	.loop-children( @class-hide, 0, @quantity );		// loop through each child!
+}
+
+// Flip the card over to show the reverse
+ul.cards li.flip{
+	.loop-children( @class-flip, 0, @quantity );	// loop through each child!
+}
+
+ul.cards li.hide-left{
+	.loop-children( @class-left, 0, @quantity );	// loop through each child!
+}
+
+ul.cards li.hide-right{
+	.loop-children( @class-right, 0, @quantity );	// loop through each child!
+}
+
+ul.cards li.hide-up{
+	.loop-children( @class-up, 0, @quantity );	// loop through each child!
+}
+
+ul.cards li.hide-down{
+	.loop-children( @class-down, 0, @quantity );	// loop through each child!
+}
+
+
+// -----------------------------------------------------
+
+ul.cards li.reload a::after {
+	//.icon("\e001");
+}
+
+ul.cards li.hide,
+ul.cards li.hide-left,
+ul.cards li.hide-right,
+ul.cards li.hide-up,
+ul.cards li.hide-down{
+	cursor:auto;
+	opacity:0;
+}

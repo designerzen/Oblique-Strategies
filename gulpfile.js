@@ -21,17 +21,17 @@ var RELEASE_FOLDER 			= squish ? 'release/' : 'uncompressed/';	// Convert to dis
 // Where do our source files live?
 var source = {
 	// ensure that all scripts in the JS folder are compiled
-	scripts : [ 
-		SOURCE_FOLDER+'scripts/main.js' 
+	scripts : [
+		SOURCE_FOLDER+'scripts/main.js'
 	],
-	vendor: [ 
-		//SOURCE_FOLDER+'scripts/load.js', 
+	vendor: [
+		//SOURCE_FOLDER+'scripts/load.js',
 		SOURCE_FOLDER+'scripts/**/*.js',
-		'!' + SOURCE_FOLDER+'scripts/main.js' 
+		'!' + SOURCE_FOLDER+'scripts/main.js'
 	],
 	styles 	: SOURCE_FOLDER+'less/styles.less',
-	jade 	: [ 
-		SOURCE_FOLDER+'jade/*.jade', 
+	jade 	: [
+		SOURCE_FOLDER+'jade/*.jade',
 		'!'+SOURCE_FOLDER+'jade/*base.jade'
 	],
 	images	: SOURCE_FOLDER+'images/**/*.+(png|jpg|jpeg|gif|webp|svg)',
@@ -90,11 +90,11 @@ var connect = require('gulp-connect');			// live reload capable server for files
 var livereload = require('gulp-livereload');	// live reload
 
 // How much to squish images by :
-/* 
-The optimization level 0 enables a set of optimization operations that require minimal effort. 
-There will be no changes to image attributes like bit depth or color type, and no recompression of existing IDAT datastreams. 
-The optimization level 1 enables a single IDAT compression trial. 
-The trial chosen is what. OptiPNG thinks it’s probably the most effective. 
+/*
+The optimization level 0 enables a set of optimization operations that require minimal effort.
+There will be no changes to image attributes like bit depth or color type, and no recompression of existing IDAT datastreams.
+The optimization level 1 enables a single IDAT compression trial.
+The trial chosen is what. OptiPNG thinks it’s probably the most effective.
 The optimization levels 2 and higher enable multiple IDAT compression trials; the higher the level, the more trials.
 
 Level and trials:
@@ -190,7 +190,7 @@ gulp.task('images', function() {
 // ACTION 	: Compiles a single Less files specified into a single CSS file
 //
 //.pipe( newer( destination.styles ) )
-//		
+//
 ///////////////////////////////////////////////////////////////////////////////////
 gulp.task('less', function() {
 	// CSS Plugins
@@ -199,9 +199,18 @@ gulp.task('less', function() {
 	// var sourcemaps = require('gulp-sourcemaps');    // create source maps for debugging!
 	return 	gulp.src( source.styles )
 			.pipe( newer( destination.styles ) )
-			.pipe( gulpif( squish, less( {strictMath: false, compress: true }), less( {strictMath: false, compress: false }) ))	// ugly code but smaller
+			.pipe( gulpif( squish,
+				less( {strictMath: false, compress: true }).on('error',function(e){
+			    console.log(e);
+					this.end();
+			  }),
+				less( {strictMath: false, compress: false }).on('error',function(e){
+			    console.log(e);
+			    this.end();
+			  })
+			))	// ugly code but smaller
 			.pipe( prefixer() )
-            .pipe( gulp.dest( destination.styles ) );
+      .pipe( gulp.dest( destination.styles ) );
 });
 
 
@@ -232,7 +241,7 @@ gulp.task('vendor',function(){
 gulp.task('scripts', function() {
     // Minify and copy all JavaScript (except vendor scripts)
     // with sourcemaps all the way down
-    var uglify = require('gulp-uglify');            // squash 
+    var uglify = require('gulp-uglify');            // squash
 	var jshint = require('gulp-jshint');			// lint!
 	var concat = require('gulp-concat');			// combine files
 	// var sourcemaps = require('gulp-sourcemaps');    // create source maps for debugging!
@@ -255,14 +264,14 @@ gulp.task('scripts', function() {
 //
 ///////////////////////////////////////////////////////////////////////////////////
 gulp.task('watch', function() {
-	
+
 	// Watch any files in build/, reload on change
 	gulp.watch( watch.scripts	, ['scripts'] );
 	gulp.watch( watch.styles 	, ['less'] );
 	gulp.watch( watch.jade  	, ['jade'] );
 	gulp.watch( watch.images 	, ['images'] );
 	gulp.watch( watch.fonts  	, ['copy'] );
-	
+
 });
 
 
