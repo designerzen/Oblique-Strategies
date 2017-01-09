@@ -21,6 +21,9 @@ var RELEASE_FOLDER 			= squish ? 'release/' : 'uncompressed/';	// Convert to dis
 // Where do our source files live?
 var source = {
 	// ensure that all scripts in the JS folder are compiled
+	data : [
+		SOURCE_FOLDER+'data/*.txt'
+	],
 	scripts : [
 		SOURCE_FOLDER+'scripts/main.js'
 	],
@@ -165,6 +168,15 @@ gulp.task('jade', function() {
 			.pipe( gulpif( squish, jade( { pretty:false, debug:false, compileDebug:false } ), jade( { pretty:true, debug:false, compileDebug:false } ) ) )
 			.pipe( gulpif( squish, htmlmin(htmlSquishOptions)) )	// ugly code but smaller
 			.pipe( gulp.dest( destination.html ) );
+});
+
+// Here we create our data models from the txt files...
+// We load in the txt file, and split it via newlines
+// then we create JSON versions (just a comma seperated array object)
+// and save them in the json folder...
+gulp.task('data', function() {
+	return 	gulp.src( source.jade )
+		.pipe( gulp.dest( destination.html ) );
 });
 
 ///////////////////////////////////////////////////////////////////////////////////

@@ -2,9 +2,7 @@
 
 // Stack of cards
 ul.cards{
-	position:relative;
-
-	// Make it fit
+	// Make it fit our cards
 	width:@cardW;
 	height:@cardH;
 
@@ -15,9 +13,11 @@ ul.cards{
   vertical-align: middle;
 
 
-	.centralise-element();
-	.centralise-datum( @cardW, @cardH );
-	//margin-top: 220px ;
+	position: absolute;
+	top:50%;
+	left:50%;
+	margin-left: @cardW / 2;
+	margin-top: @cardH / 2;
 
 	transform-style: preserve-3d;
 	transform-origin: 50% 50% ;

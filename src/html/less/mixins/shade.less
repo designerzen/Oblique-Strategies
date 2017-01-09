@@ -8,15 +8,15 @@
 	@shadow: ~"@{x}px @{y}px 0px @{shadowColor}";
 	@ends: ~"@{shadow}, @{tmp}";
 	@shadowString: ~"@{ends} 0px 0px 1px #000";
-	 
+
 	.longShadowLoop(@string, @index) when (@index < 1) {
 		text-shadow: @string;
 	}
-	 
+
 	.longShadowLoop(@shadowString, @size - 1);
 	.longShadow(@color,@angle, @size - 1, @spread, @flag + 1, @ends);
 }
- 
+
 // Box-shadow
 .longShadowBox(@color,@angle, @size, @spread: 1, @flag: 1, @tmp: '') when (@size > 0) {
 	@turn: (@angle - 90);
@@ -27,13 +27,29 @@
 	@shadow: ~"@{x}px @{y}px 0 0 @{shadowColor}";
 	@ends: ~"@{shadow}, @{tmp}";
 	@shadowString: ~"@{ends} 0px 0px 0 0 #000";
-	 
+
 	.longShadowLoop(@string, @index) when (@index < 1) {
 		-webkit-box-shadow: @string;
 		-moz-box-shadow: @string;
 		box-shadow: @string;
 	}
-	 
+
 	.longShadowLoop(@shadowString, @size - 1);
 	.longShadowBox(@color,@angle, @size - 1, @spread, @flag + 1, @ends);
 }
+
+// http://markdotto.com/playground/3d-text/
+.3D-text(@color,@depth) {
+    color:@color;
+    text-shadow:
+    0 (@depth*0.01em) 0 lighten(@color,3.3%),
+    0 (@depth*0.02em) (@depth*0.01em) darken(@color,10%),
+    0 (@depth*0.03em) (@depth*0.02em) darken(@color,11%),
+    0 (@depth*0.04em) (@depth*0.02em) darken(@color,13%),
+    0 (@depth*0.06em) (@depth*0.01em) darken(@color,16%),
+    0 (@depth*0.06em) (@depth*0.03em) rgba(0,0,0,.5),
+    0 0 (@depth*0.05em) rgba(0,0,0,.2),
+    0 (@depth*0.02em) (@depth*0.08em) rgba(0,0,0,.3),
+    0 (@depth*0.1em) (@depth*0.12em) rgba(0,0,0,.25),
+    0 (@depth*0.2em) (@depth*0.20em) rgba(0,0,0,.15);
+} 

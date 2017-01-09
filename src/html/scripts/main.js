@@ -1,4 +1,3 @@
-
 (function() {
 	"use strict";
 
@@ -13,7 +12,7 @@
 
 		// DOM Elements
 		docBody = document.body,
-		body = document.getElementById( 'body' ),
+		//body = document.getElementById( 'body' ),
 		world = document.getElementById( 'deck' ),
 		touchEvents = Hammer( world ),
 
@@ -44,7 +43,7 @@
 		currentTransform = transform;
 		setTransform( world.style, transform );
 		onUserActive();
-	};
+	}
 
 	// Browsers
 	// sniff the browser
@@ -99,7 +98,7 @@
 		if (!hasClass(elem, className))
 		{
 
-			if ( elem.className.length == 0 ) elem.className += className;
+			if ( elem.className.length === 0 ) elem.className += className;
 			else elem.className += ' ' + className;
 		}
 	}
@@ -347,11 +346,11 @@
 			onTilt(event.acceleration.x * 2, event.acceleration.y * 2);
 		}, true);
 	}else {
-		window.addEventListener("MozOrientation", function () {
+		window.addEventListener("MozOrientation", function (orientation) {
 			onTilt([orientation.x * 50, orientation.y * 50]);
 		}, true);
 	}
 
-	onDOMReady();
+	//onDOMReady();
 
 })();
