@@ -1,6 +1,7 @@
 // let us add a reverse face to the card :)
 
-@import url(mixins/cards.nth.less);
+//@import url(mixins/cards.nth.less);
+@import url(mixins/cards.classes.less);
 
 // Stack of cards ul
 .cards{
@@ -35,11 +36,10 @@
 	// shadow
 	//.border-radius( 12px );
 	//background-color:@dark;
-	//#3L > .box-shadow(5px 5px 12px 4px @dark );
+	//box-shadow(5px 5px 12px 4px @dark );
 
 	// Each individual card li
 	.card{
-		//.backface-visibility( hidden );
 		backface-visibility: hidden ;
 		transform-origin: 50% 50% ;
 		box-sizing: border-box;
@@ -90,7 +90,7 @@
 
 	// This is the relaod card!
 	.card-1{
-
+transform-style: preserve-3d;
 		a#shuffle{
 			user-select:none;
 			display: flex;

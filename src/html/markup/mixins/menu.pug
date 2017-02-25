@@ -1,7 +1,7 @@
 mixin navigation( decks,active )
 	ul
 		each deck, index in decks
-			li.deck(class=active === index ? 'active' : ''): a(href=deck.link, alt=deck.description) #{deck.name}
+			li.deck(class=active === index +1? 'active' : ''): a(href=deck.link, alt=deck.description) #{deck.name}
 			//-
 				ul
 					li(class=active === 1 ? 'active' : ''): a(href='1.html', alt='Version 1 - 1975') I

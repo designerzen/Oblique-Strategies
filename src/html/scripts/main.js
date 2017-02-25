@@ -276,6 +276,7 @@
 	{
 		var node = event.target;
     onUserActive();
+    console.error( event.gesture, event);
 		if ( node.nodeName.toLowerCase() != 'li' )
 		{
 			// rotate deck

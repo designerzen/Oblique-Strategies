@@ -1,0 +1,30 @@
+@import url(loops.less);
+// @from
+.makeRandom(1.1, 1.2, 0); /* random integer  10 - 20 */
+@random	:@randNum; //1.1;
+
+// overwrite loops
+// Global Loop Styles
+.looper( @_ ; @n ){
+
+}
+
+// Here we define our individual loop mixins
+// card at index @n
+.looper( show; @n ){
+	&.card-@{from}
+	{
+        //z-index:(999 - @n);
+		transform:translate3d( 0, 0, @z-offset - (@n * @gap) );
+		//.transform( translate3d( 0, 0, -@n * @gap ) );/rotateX(@n+0deg)
+	}
+}
+
+// card at index @n
+.loop-children( @name; @from:0; @to:1) when (@from < @to ){
+	@count: @to - @from;
+	&.card-@{count} {
+		.child( @name, @from );
+	}
+	.loop-children( @name,(@from + 1) , @to );	// self iterating... next iteration
+}
