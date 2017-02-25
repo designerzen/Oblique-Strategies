@@ -270,10 +270,10 @@ gulp.task('scripts', function() {
 	// var sourcemaps = require('gulp-sourcemaps');    // create source maps for debugging!
 	return  gulp.src( source.scripts )
       .pipe( concat('main.js') )
-  		.pipe( gulpif( squish, uglify() ) )
-			.pipe( jshint('.jshintrc'))
+  		.pipe( jshint('.jshintrc'))
 			.pipe( jshint.reporter('default') )
-      .pipe( gulp.dest( destination.scripts ) );
+      .pipe( gulpif( squish, uglify() ) )
+			.pipe( gulp.dest( destination.scripts ) );
 });
 
 
@@ -312,7 +312,7 @@ gulp.task('server', function() {
 		livereload: true
   	});
 });
-gulp.task('distribute', function() {
+gulp.task('deploy',['build'], function() {
     var ghPages = require('gulp-gh-pages');
     return gulp.src(BUILD_FOLDER+'**/*')
       .pipe(ghPages());

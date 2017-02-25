@@ -9,7 +9,7 @@
 	*/
 	var
 		IDLE_TIMEOUT = 5,	// seconds
-    directions = [ "hide-up", "hide-left", "hide-right", "hide-down" ],
+    DIRECTIONS = [ "hide-up", "hide-left", "hide-right", "hide-down" ],
 
 		// DOM Elements
 		docBody = document.body,
@@ -78,6 +78,7 @@
 			var kid = deck.children[ Math.random() * i | 0 ];
 			deck.appendChild( kid );
 		}
+    cards = deck.getElementsByClassName( 'card' );
 	}
 
 	// Reset the UI
@@ -139,7 +140,29 @@
 
   function getRandomDirection()
   {
-    return directions[ Math.ceil(Math.random() * directions.length) ];
+    return DIRECTIONS[ Math.round(Math.random() * (DIRECTIONS.length-1)) ];
+  }
+  function determineDirection(percentageX, percentageY)
+  {
+    if (percentageX >= 0.65)
+    {
+      return Hammer.DIRECTION_RIGHT;
+    }
+    if (percentageX <= 0.35)
+    {
+      return Hammer.DIRECTION_LEFT;
+    }
+    // determine direction...
+    if (percentageX > 0.25 && percentageX < 0.75 && percentageY < 0.5)
+    {
+      return Hammer.DIRECTION_UP;
+    }
+    if (percentageX > 0.25 && percentageX < 0.75 && percentageY >= 0.5)
+    {
+      return Hammer.DIRECTION_DOWN;
+    }
+
+    return getRandomDirection();
   }
 
   function debounce()
@@ -148,10 +171,37 @@
     limiter = setTimeout( onDelayed, 500 );
   }
 
-	// EVENTS! ==========================================================
-  function onCardInteraction()
+  function swipeNextCard( direction )
   {
-    index++;
+    var card = cards[index++];
+    switch( direction )
+		{
+			case Hammer.DIRECTION_UP :
+				addClass( card, "hide-up" );
+				break;
+
+			case Hammer.DIRECTION_LEFT :
+				addClass( card, "hide-left" );
+				break;
+
+			case Hammer.DIRECTION_RIGHT :
+				addClass( card, "hide-right" );
+				break;
+
+			case Hammer.DIRECTION_DOWN :
+				addClass( card, "hide-down" );
+				break;
+
+			default:
+      //
+				addClass( card, getRandomDirection() );
+		}
+    onCardInteraction(card);
+  }
+	// EVENTS! ==========================================================
+  function onCardInteraction(card)
+  {
+    console.log(card);
   }
 	function onMouseDown(e)
 	{
@@ -181,12 +231,8 @@
 			return;
 		}
 
-		// add our hidden class!
-		if ( e.target.nodeName.toLowerCase() == 'li' )
-    {
-      e.target.className = e.target.className + " hide";
-      onCardInteraction();
-    }
+    swipeNextCard();
+
 	}
 
 	function onMouseWheel(event)
@@ -228,6 +274,7 @@
   {
     isBusy = false;
   }
+
 	function onSwipe( event )
 	{
 		var node = event.target;
@@ -240,38 +287,14 @@
       return;
     }
 
-		// add our hidden class!
-		if ( node.nodeName.toLowerCase() != 'li' )  return;
-
 		// check to see if there is a reload class...
 		if ( hasClass( node, 'reload' )  ) return;
 
 		// determine length and speed!
 
 		// console.log(  event.gesture.direction + '   ' + Hammer.DIRECTION_UP );
+    swipeNextCard(event.direction);
 
-		switch( event.direction )
-		{
-			case Hammer.DIRECTION_UP :
-				addClass( node, "hide-up" );
-				break;
-
-			case Hammer.DIRECTION_LEFT :
-				addClass( node, "hide-left" );
-				break;
-
-			case Hammer.DIRECTION_RIGHT :
-				addClass( node, "hide-right" );
-				break;
-
-			case Hammer.DIRECTION_DOWN :
-				addClass( node, "hide-down" );
-				break;
-
-			default:
-				addClass( node, getRandomDirection() );
-		}
-    onCardInteraction();
     isBusy = true;
     debounce();
 	}
@@ -279,17 +302,15 @@
 	function onTap( event )
 	{
 		onUserActive();
-		console.log( "tap", event.target.nodeName );
 
 		// check to see if there is a reload class...
 		if ( hasClass( event.target, 'reload' ) ) return;
 
-		// add our hidden class!
-		if ( event.target.nodeName.toLowerCase() == 'li' )
-    {
-      onCardInteraction();
-      addClass( event.target, getRandomDirection() );
-    }
+    var percentageX = event.center.x / window.innerWidth;
+    var percentageY = event.center.y / window.innerHeight;
+
+		//console.log( "tap", event.target.nodeName, percentageX, percentageY );
+    swipeNextCard( determineDirection(percentageX,percentageY) );
 	}
 
 	function onPinch( event )
