@@ -9,15 +9,19 @@
 	*/
 	var
 		IDLE_TIMEOUT = 5,	// seconds
+    directions = [ "hide-up", "hide-left", "hide-right", "hide-down" ],
 
 		// DOM Elements
 		docBody = document.body,
+		deck = document.getElementById( 'deck' ),
 		world = document.getElementById( 'deck' ),
+		cards = deck.getElementsByClassName( 'card' ),
 		//world = document.getElementById( 'content' ),
 		touchEvents = new Hammer( world, {} ),
 
 		isActive = true,
 		isBusy = false,
+		index = 0,
 		idleSecondsCounter = 0,
 		timer = -1,
     limiter = -1,
@@ -69,11 +73,10 @@
 	// Moves all the LI elements around in the deck
 	function shuffleDeck()
 	{
-		var ul = document.getElementById("deck");
-		for (var i = ul.children.length - 1; i >= 0; --i)
+		for (var i = deck.children.length - 1; i >= 0; --i)
 		{
-			var kid = ul.children[ Math.random() * i | 0 ];
-			ul.appendChild( kid );
+			var kid = deck.children[ Math.random() * i | 0 ];
+			deck.appendChild( kid );
 		}
 	}
 
@@ -85,6 +88,8 @@
 			var kid = world.children[ i ];
 			kid.className = '';
 		}
+
+    index = 0
 	}
 
 	// Some handy methods with older browser support
@@ -132,8 +137,22 @@
 		}
 	}
 
-	// EVENTS! ==========================================================
+  function getRandomDirection()
+  {
+    return directions[ Math.ceil(Math.random() * directions.length) ];
+  }
 
+  function debounce()
+  {
+    clearInterval(limiter);
+    limiter = setTimeout( onDelayed, 500 );
+  }
+
+	// EVENTS! ==========================================================
+  function onCardInteraction()
+  {
+    index++;
+  }
 	function onMouseDown(e)
 	{
 		e = e || window.event;
@@ -163,11 +182,16 @@
 		}
 
 		// add our hidden class!
-		if ( e.target.nodeName.toLowerCase() == 'li' )e.target.className = e.target.className + " hide";
+		if ( e.target.nodeName.toLowerCase() == 'li' )
+    {
+      e.target.className = e.target.className + " hide";
+      onCardInteraction();
+    }
 	}
 
 	function onMouseWheel(event)
 	{
+    onUserActive();
 		event = event ? event : window.event;	// event may be empty so use as fallback
 		z = z-( event.detail ? event.detail*-5 : event.wheelDelta/8 );
 		update();
@@ -178,6 +202,7 @@
 
 	function onMouseMove(event)
 	{
+    onUserActive();
 		x = ( 0.5 - ( event.clientY / window.innerHeight ) ) * 180;
 		y = ( 0.5 - ( event.clientX / window.innerWidth ) ) * -180;
 		update();
@@ -187,7 +212,7 @@
 	function onDrag( event )
 	{
 		var node = event.target;
-
+    onUserActive();
 		if ( node.nodeName.toLowerCase() != 'li' )
 		{
 			// rotate deck
@@ -208,7 +233,7 @@
 		var node = event.target;
 
 		onUserActive();
-		console.log( "swipe isBusy;"+isBusy, event.target );
+		//console.log( "swipe isBusy;"+isBusy, event.target );
 
     if (isBusy)
     {
@@ -224,7 +249,6 @@
 		// determine length and speed!
 
 		// console.log(  event.gesture.direction + '   ' + Hammer.DIRECTION_UP );
-
 
 		switch( event.direction )
 		{
@@ -245,11 +269,11 @@
 				break;
 
 			default:
-				addClass( node, "hide" );
+				addClass( node, getRandomDirection() );
 		}
-
+    onCardInteraction();
     isBusy = true;
-    limiter = setTimeout( onDelayed, 300 );
+    debounce();
 	}
 
 	function onTap( event )
@@ -261,11 +285,16 @@
 		if ( hasClass( event.target, 'reload' ) ) return;
 
 		// add our hidden class!
-		if ( event.target.nodeName.toLowerCase() == 'li' ) addClass( event.target, "hide" );
+		if ( event.target.nodeName.toLowerCase() == 'li' )
+    {
+      onCardInteraction();
+      addClass( event.target, getRandomDirection() );
+    }
 	}
 
 	function onPinch( event )
 	{
+    onUserActive();
 		// zoom in or out
 		z += 0;
 		update();
@@ -318,6 +347,19 @@
 	}
 
 
+  var shuffleButton = document.getElementById('shuffle');
+  shuffleButton.onclick = function(){
+    if (cards.length >1)
+    {
+      shuffleDeck();
+      reset();
+    }else{
+      // goto a random page!
+      window.location = "1.html";
+    }
+
+  };
+
 	// Now hook into our window events
 	window.addEventListener('mousewheel',onMouseWheel, true);
 	// Event listener to transform mouse position into angles from -180 to 180 degress, both vertically and horizontally
@@ -342,14 +384,15 @@
 	// pinch, pinchin, pinchout
 	// touch (gesture detection starts)
 	// release (gesture detection ends)
+  touchEvents.get('pinch').set({ enable: true });
 	touchEvents.on( "tap", onTap );
 	touchEvents.on( "pan", onSwipe );
 	touchEvents.on( "swipe", onSwipe );
 	touchEvents.on( "drag", onDrag );
 	touchEvents.on( "pinch", onPinch );
-  touchEvents.on("hammer.input", function(ev) {
-     //console.log(ev.pointers[0]);
-  });
+  // touchEvents.on("hammer.input", function(ev) {
+  //    //console.log(ev.pointers[0]);
+  // });
 	// gyro!
 	if (window.DeviceOrientationEvent)
 	{

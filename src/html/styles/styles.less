@@ -18,7 +18,7 @@ and the element
 
 
 @cardPX 	: 40px;
-@cardPY 	: 180px;
+@cardPY 	: 40px;
 
 @cardW 		: 420px;
 @cardH 		: 220px;
@@ -53,6 +53,7 @@ body{
 	width:auto;
 	height:100%;
 	color: @neutral;
+	cursor: grab;
 }
 
 @import url(typography.less);
@@ -60,21 +61,36 @@ body{
 // header
 header{
 	color: @dark;
-	position: absolute;;
-	top:0;
-	left:0;
-	width:auto;
-	height:100%;
+	//position: absolute;;
+	//top:0;
+	//left:0;
+	//width:100%;
+	//height:100%;
 	//z-index:9999;
 	//transition:all 1s;
 	letter-spacing:3px;
 }
-
+header,h1,h2,footer{
+	user-select: none;
+}
 header nav{
 	color: @light;
 	position: absolute;
-	top: 22px;
-	right:22px ;
+	top: 0;
+	right:0;
+	z-index:909;
+	ul{
+		margin: 0;
+		padding:0;
+	}
+	ul li{
+		display: inline-block;
+
+		&.active{
+			background-color: @light;
+			color: @dark;
+		}
+	}
 }
 
 // Horizontal Nav
@@ -92,6 +108,7 @@ header nav{
 	left:0;
 	width:100%;
 	height:100%;
+	z-index:3;
 	// .vertical-gradient( rgba(0,0,0, 1), rgba(0,0,0, 0.75) );
 	visibility:visible;
 	opacity:1;
@@ -140,7 +157,7 @@ footer h4, footer h5, footer p, footer nav{
 	transition:all 0.5s;
 }
 header,footer h4, footer h5, footer p, footer nav{
-		transition:all 0.5s;
+		transition:opacity 0.5s;
 }
 
 .inactive{

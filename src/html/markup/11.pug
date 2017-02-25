@@ -1,9 +1,14 @@
 extends template/base
+
 include mixins/cards
+include mixins/menu
 
 block header
-	h1 Jodorowsky Version
-	h2 1985
+	h3 Jodorowsky Version
+	h4 1985
+
+block menu
+	+navigation(11)
 
 block cards
 	+pack(cards, "11")

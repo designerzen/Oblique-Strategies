@@ -1,9 +1,14 @@
 extends template/base
+
 include mixins/cards
+include mixins/menu
 
 block header
-	h1 Third Version
-	h2 1979
+	h3 Third Version
+	h4 1979
+
+block menu
+	+navigation(3)
 
 block cards
 	+pack(cards, "III")

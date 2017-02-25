@@ -48,12 +48,14 @@ var folders = {
 	styles 	: 'css',
 	html 	: '',
 	images	: 'img',
+	data	: 'data',
 	fonts	: 'fonts'
 };
 
 // Where shall we compile them to?
 var getDestinations = function( dir ) {
 	return {
+		data : dir + folders.data,
 		scripts : dir + folders.scripts,
 		styles 	: dir + folders.styles,
 		html 	: dir + folders.html,
@@ -177,7 +179,7 @@ gulp.task('data', function() {
   // load all files in folder...
 
 	return 	gulp.src( source.data+'**/*' )
-		.pipe( gulp.dest( destination.html ) );
+		.pipe( gulp.dest( destination.data ) );
 });
 
 // loads the data from the text files and creates json
@@ -309,6 +311,11 @@ gulp.task('server', function() {
 		port:8080,
 		livereload: true
   	});
+});
+gulp.task('distribute', function() {
+    var ghPages = require('gulp-gh-pages');
+    return gulp.src(BUILD_FOLDER+'**/*')
+      .pipe(ghPages());
 });
 
 ///////////////////////////////////////////////////////////////////////////////////

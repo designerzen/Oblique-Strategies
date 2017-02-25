@@ -9,9 +9,10 @@ ul.cards{
 	// table breaks ff ;(
 	//display: table;
 	display:block;
-	display: table-cell;
+	//display: table-cell;
   vertical-align: middle;
 
+	cursor: pointer;
 
 	position: absolute;
 	top:50%;
@@ -38,9 +39,10 @@ ul.cards{
 		//.backface-visibility( hidden );
 		backface-visibility: hidden ;
 		transform-origin: 50% 50% ;
+		box-sizing: border-box;
 
-		width: @cardW - @cardPX;
-		height: @cardH - @cardPY;
+		width: @cardW ;//- @cardPX;
+		height: @cardH;// - @cardPY;
 
 		//.border( @dark, 1px, solid );
 		border-width:1px;
@@ -54,42 +56,46 @@ ul.cards{
 		top:0;
 		left:0;
 
-
-		//.position-tl( @cardH/2, @cardW/2 );
-		//.margins-tl( -( @cardW - @cardPX ) / 2 , -( @cardH - @cardPY ) / 2 );
 		padding: (@cardPY/2) (@cardPX/2);
+		//padding: 0 (@cardPX/2);
 		color:@dark;
 
 
 		//background:@light url(../img/jpg/seamlesstexture29_500.jpg) repeat top left;
 		background-color:@light;
-			//background-image: url(../img/jpg/seamlesstexture1_500.jpg), url(../img/jpg/seamlesstexture29_500.jpg);
-		//background-image: url(../img/jpg/seamlesstexture29_500.jpg), url(../img/jpg/seamlesstexture3_500.jpg);
-		//background-repeat: repeat;
-		//#3L > .vertical-gradient( @light, @neutral );
 		opacity:1;
 
 		// set text to be centralised vertically
 		//display: block;
 		display: table-cell;
 		vertical-align: middle;
+
+		display: flex;
+    justify-content: center; /* align horizontal */
+    align-items: center; /* align vertical */
+
 		text-align: center;
 		user-select:none;
 
 		cursor: pointer;
+
 		-webkit-font-smoothing: antialiased;
 		-webkit-user-drag: none;
-		user-selectable:none;
-		transition :all 1s;
+		transition :transform 1s ease-out, opacity 1.2s linear;
+
+		a{
+			display: flex;
+	    justify-content: center;
+	    align-items: center;
+			border-radius: 9px;
+			width:100%;
+			height:100%;
+		}
 	}
 
 	// This is the relaod card!
 	li.reload{
-		a{
-			display:block;
-			width:100%;
-			height:100%;
-		}
+
 	}
 
 }
