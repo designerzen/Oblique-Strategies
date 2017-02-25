@@ -16,8 +16,8 @@ ul.cards{
 	position: absolute;
 	top:50%;
 	left:50%;
-	margin-left: @cardW / 2;
-	margin-top: @cardH / 2;
+	margin-left: -@cardW / 2;
+	margin-top: -@cardH / 2;
 
 	transform-style: preserve-3d;
 	transform-origin: 50% 50% ;
@@ -141,7 +141,7 @@ ul.cards li:after{
 .child( hide; @n ){
    //transform:translate3d( @cardW + @cardPX, 0, @z-offset - (@n * @gap) + 400 );
 	@rotation : 90deg;
-	transform: translate3d( 0, 2 * @cardH + 10, @z-offset-hidden - (@n * @gap) ), rotateX( @rotation );
+	transform: translate3d( 0, 2 * @cardH + 10, @z-offset-hidden - (@n * @gap) ) rotateX( @rotation );
 }
 
 // card at index @n
@@ -150,29 +150,29 @@ ul.cards li:after{
 	//.translateZ( @n * 1px );
 	//transform:translate3d( @cardW + @cardPX, 0, @z-offset - (@n * @gap) + 400 );
 	@rotation : 90deg;
-	transform:translate3d( 0, 2 * @cardH + 10, @z-offset-hidden - (@n * @gap) ), rotateX( @rotation );
+	transform:translate3d( 0, 2 * @cardH + 10, @z-offset-hidden - (@n * @gap) ) rotateX( @rotation );
 }
 
 // card at index @n
 .child( up; @n ){
 	@rotation : 90deg * @random;
-	transform:translate3d( 0, -4 * @cardH - 10, @z-offset-hidden - (@n * @gap) ), rotateX( -@rotation);
+	transform:translate3d( 0, -4 * @cardH - 10, @z-offset-hidden - (@n * @gap) ) rotateX( -@rotation);
 }
 // card at index @n
 .child( down; @n ){
 	@rotation : 90deg * @random;
-	transform:translate3d( 0, 4 * @cardH + 10, @z-offset-hidden - (@n * @gap) ), rotateX( @rotation );
+	transform:translate3d( 0, 4 * @cardH + 10, @z-offset-hidden - (@n * @gap) ) rotateX( @rotation );
 }
 
 // card at index @n
 .child( left; @n ){
 	@rotation : 90deg * @random;
-	transform:translate3d( -2 * @cardW + 10, 0, @z-offset-hidden - (@n * @gap) ), rotateY( -@rotation );
+	transform:translate3d( -2 * @cardW + 10, 0, @z-offset-hidden - (@n * @gap) ) rotateY( -@rotation );
 }
 // card at index @n
 .child( right; @n ){
 	@rotation : 90deg * @random;
-	transform:translate3d( 2 * @cardW + 10, 0, @z-offset-hidden - (@n * @gap)  ), rotateY( @rotation );
+	transform:translate3d( 2 * @cardW + 10, 0, @z-offset-hidden - (@n * @gap)  ) rotateY( @rotation );
 }
 
 

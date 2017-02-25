@@ -1,0 +1,5 @@
+mixin pack( cards )
+  //- loop through the json data file and create!
+  each card, index in cards
+    - var classes = ['card-'+(index+1), 'card']
+    li(class=classes)= card

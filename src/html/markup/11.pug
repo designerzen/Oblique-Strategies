@@ -1,0 +1,13 @@
+extends template/base
+include mixins/cards
+
+block header
+	h1 Jodorowsky Version
+	h2 1985
+
+block cards
+	+pack(cards, "11")
+
+block footer
+	p.info 1985
+		a(class='internal', href='') learn more

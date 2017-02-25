@@ -10,3 +10,4 @@ release
 Thumbs.db
 bower_components
 *.DS_Store
+*.log

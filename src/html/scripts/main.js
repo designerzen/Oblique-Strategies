@@ -12,13 +12,15 @@
 
 		// DOM Elements
 		docBody = document.body,
-		//body = document.getElementById( 'body' ),
 		world = document.getElementById( 'deck' ),
-		touchEvents = Hammer( world ),
+		//world = document.getElementById( 'content' ),
+		touchEvents = new Hammer( world, {} ),
 
 		isActive = true,
+		isBusy = false,
 		idleSecondsCounter = 0,
 		timer = -1,
+    limiter = -1,
 
 		// world transformations
 		x = 0,
@@ -26,6 +28,25 @@
 		z = 0,
 		currentTransform = 'translateZ( '+z+'px ) rotateX( '+x+'deg) rotateY( '+y+'deg)';
 
+
+		// Browsers
+		// sniff the browser
+		// var IE6 = false /*@cc_on || @_jscript_version < 5.7 @*/
+		// var IE7 = (document.all && !window.opera && window.XMLHttpRequest && navigator.userAgent.toString().toLowerCase().indexOf('trident/4.0') == -1) ? true : false;
+		// var IE8 = (navigator.userAgent.toString().toLowerCase().indexOf('trident/4.0') != -1);
+		// var IE9 = navigator.userAgent.toString().toLowerCase().indexOf("trident/5")>-1;
+		// var IE10 = navigator.userAgent.toString().toLowerCase().indexOf("trident/6")>-1;
+		// var SAFARI = (navigator.userAgent.toString().toLowerCase().indexOf("safari") != -1) && (navigator.userAgent.toString().toLowerCase().indexOf("chrome") == -1);
+		// var CHROME = (navigator.userAgent.toString().toLowerCase().indexOf("chrome") != -1);
+		// var MOBILE_SAFARI = ((navigator.userAgent.toString().toLowerCase().indexOf("iphone")!=-1) || (navigator.userAgent.toString().toLowerCase().indexOf("ipod")!=-1) || (navigator.userAgent.toString().toLowerCase().indexOf("ipad")!=-1)) ? true : false;
+		var FIREFOX = (navigator.userAgent.toString().toLowerCase().indexOf("firefox") != -1);
+		var OPERA = (navigator.userAgent.toString().toLowerCase().indexOf("opera")!=-1) ;
+		function setTransform( element, transform )
+		{
+			element.webkitTransform = transform;
+			if (FIREFOX) element.MozTransform = transform;
+			if (OPERA) element.oTransform = transform;
+		}
 
 
 	/*
@@ -43,25 +64,6 @@
 		currentTransform = transform;
 		setTransform( world.style, transform );
 		onUserActive();
-	}
-
-	// Browsers
-	// sniff the browser
-	// var IE6 = false /*@cc_on || @_jscript_version < 5.7 @*/
-	// var IE7 = (document.all && !window.opera && window.XMLHttpRequest && navigator.userAgent.toString().toLowerCase().indexOf('trident/4.0') == -1) ? true : false;
-	// var IE8 = (navigator.userAgent.toString().toLowerCase().indexOf('trident/4.0') != -1);
-	// var IE9 = navigator.userAgent.toString().toLowerCase().indexOf("trident/5")>-1;
-	// var IE10 = navigator.userAgent.toString().toLowerCase().indexOf("trident/6")>-1;
-	// var SAFARI = (navigator.userAgent.toString().toLowerCase().indexOf("safari") != -1) && (navigator.userAgent.toString().toLowerCase().indexOf("chrome") == -1);
-	// var CHROME = (navigator.userAgent.toString().toLowerCase().indexOf("chrome") != -1);
-	// var MOBILE_SAFARI = ((navigator.userAgent.toString().toLowerCase().indexOf("iphone")!=-1) || (navigator.userAgent.toString().toLowerCase().indexOf("ipod")!=-1) || (navigator.userAgent.toString().toLowerCase().indexOf("ipad")!=-1)) ? true : false;
-	var FIREFOX = (navigator.userAgent.toString().toLowerCase().indexOf("firefox") != -1);
-	var OPERA = (navigator.userAgent.toString().toLowerCase().indexOf("opera")!=-1) ;
-	function setTransform( element, transform )
-	{
-		element.webkitTransform = transform;
-		if (FIREFOX) element.MozTransform = transform;
-		if (OPERA) element.oTransform = transform;
 	}
 
 	// Moves all the LI elements around in the deck
@@ -197,13 +199,21 @@
 		}
 	}
 
+	function onDelayed( event )
+  {
+    isBusy = false;
+  }
 	function onSwipe( event )
 	{
-		console.log( event.target.nodeName );
-
 		var node = event.target;
 
 		onUserActive();
+		console.log( "swipe isBusy;"+isBusy, event.target );
+
+    if (isBusy)
+    {
+      return;
+    }
 
 		// add our hidden class!
 		if ( node.nodeName.toLowerCase() != 'li' )  return;
@@ -216,7 +226,7 @@
 		// console.log(  event.gesture.direction + '   ' + Hammer.DIRECTION_UP );
 
 
-		switch( event.gesture.direction )
+		switch( event.direction )
 		{
 			case Hammer.DIRECTION_UP :
 				addClass( node, "hide-up" );
@@ -238,12 +248,14 @@
 				addClass( node, "hide" );
 		}
 
+    isBusy = true;
+    limiter = setTimeout( onDelayed, 300 );
 	}
 
 	function onTap( event )
 	{
 		onUserActive();
-		console.log( event.target.nodeName );
+		console.log( "tap", event.target.nodeName );
 
 		// check to see if there is a reload class...
 		if ( hasClass( event.target, 'reload' ) ) return;
@@ -279,7 +291,7 @@
 		timer = window.setInterval(checkIdleTime, 1000);
 		// remove class names from body
 		removeClass( docBody, "loading" );
-		//console.log('LOADED ====================== ');
+		console.log('LOADED ====================== ');
 	}
 
 	function onUserActive()
@@ -331,10 +343,13 @@
 	// touch (gesture detection starts)
 	// release (gesture detection ends)
 	touchEvents.on( "tap", onTap );
+	touchEvents.on( "pan", onSwipe );
 	touchEvents.on( "swipe", onSwipe );
 	touchEvents.on( "drag", onDrag );
 	touchEvents.on( "pinch", onPinch );
-
+  touchEvents.on("hammer.input", function(ev) {
+     //console.log(ev.pointers[0]);
+  });
 	// gyro!
 	if (window.DeviceOrientationEvent)
 	{

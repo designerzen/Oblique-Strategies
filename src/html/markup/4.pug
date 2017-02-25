@@ -1,0 +1,13 @@
+extends template/base
+include mixins/cards
+
+block header
+	h1 Fourth Version
+	h2 1989
+
+block cards
+	+pack(cards, "IV")
+
+block footer
+	p.info 1989
+		a(class='', href='') learn more

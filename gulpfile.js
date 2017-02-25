@@ -3,7 +3,7 @@
 This handles the compilation of the source elements :
 
 Less 			-> 		CSS 3
-Jade 			-> 		HTML 5
+markup 			-> 		HTML 5
 JavaScript		-> 		JS ( Squished, uglified, concatanated )
 
 */
@@ -13,18 +13,18 @@ JavaScript		-> 		JS ( Squished, uglified, concatanated )
 var squish = false;
 
 // Set up paths here (for this boilerplate, you should not have to alter these)
-var SOURCE_FOLDER 			= 'src/html/';								// Source files Root
-var BUILD_FOLDER 			= 'build/';									// Where the initial build occurs (debugable)
-var DISTRIBUTION_FOLDER 	= 'dist/';									// Once debugging is complete, copy to server ready files here
+var SOURCE_FOLDER 			= './src/html/';								// Source files Root
+var BUILD_FOLDER 			= './build/';									// Where the initial build occurs (debugable)
+var DISTRIBUTION_FOLDER 	= './dist/';									// Once debugging is complete, copy to server ready files here
 var RELEASE_FOLDER 			= squish ? 'release/' : 'uncompressed/';	// Convert to distributable zips
 
 // Where do our source files live?
 var source = {
 	// ensure that all scripts in the JS folder are compiled
-	data : [
-		SOURCE_FOLDER+'data/*.txt'
-	],
+	data : './src/data/',
 	scripts : [
+		SOURCE_FOLDER+'scripts/vendor/hammer.min.js',
+		SOURCE_FOLDER+'scripts/animationframe.js',
 		SOURCE_FOLDER+'scripts/main.js'
 	],
 	vendor: [
@@ -32,10 +32,10 @@ var source = {
 		SOURCE_FOLDER+'scripts/**/*.js',
 		'!' + SOURCE_FOLDER+'scripts/main.js'
 	],
-	styles 	: SOURCE_FOLDER+'less/styles.less',
-	jade 	: [
-		SOURCE_FOLDER+'jade/*.jade',
-		'!'+SOURCE_FOLDER+'jade/*base.jade'
+	styles 	: SOURCE_FOLDER+'styles/styles.less',
+	markup 	: [
+		SOURCE_FOLDER+'markup/*.+(pug|jade)',
+		'!'+SOURCE_FOLDER+'markup/*base.+(pug|jade)'
 	],
 	images	: SOURCE_FOLDER+'images/**/*.+(png|jpg|jpeg|gif|webp|svg)',
 	fonts	: SOURCE_FOLDER+'fonts/**/*.+(svg|eot|woff|ttf|otf)'
@@ -65,8 +65,8 @@ var getDestinations = function( dir ) {
 // Files and folders to watch for changes in...
 var watch = {
 	scripts : SOURCE_FOLDER+'scripts/*.js',
-	styles 	: SOURCE_FOLDER+'less/*.less',
-	jade 	: SOURCE_FOLDER+'jade/*.jade',
+	styles 	: SOURCE_FOLDER+'styles/*.less',
+	markup 	: SOURCE_FOLDER+'markup/*.+(pug|jade)',
 	images	: SOURCE_FOLDER+'images/**/*',
 	fonts	: SOURCE_FOLDER+'fonts/**/*'
 };
@@ -86,32 +86,13 @@ var gulpif = require('gulp-if');				// conditional compiles
 var newer = require('gulp-newer');				// deal with only modified files
 
 var replace = require('gulp-replace');			// replace content within files
+var path = require('path');							// path tools
 var fs = require('fs');							// read inside files
 var rename = require('gulp-rename');			// rename files
 
 var connect = require('gulp-connect');			// live reload capable server for files
 var livereload = require('gulp-livereload');	// live reload
 
-// How much to squish images by :
-/*
-The optimization level 0 enables a set of optimization operations that require minimal effort.
-There will be no changes to image attributes like bit depth or color type, and no recompression of existing IDAT datastreams.
-The optimization level 1 enables a single IDAT compression trial.
-The trial chosen is what. OptiPNG thinks it’s probably the most effective.
-The optimization levels 2 and higher enable multiple IDAT compression trials; the higher the level, the more trials.
-
-Level and trials:
-
-    1 trial
-    8 trials
-    16 trials
-    24 trials
-    48 trials
-    120 trials
-    240 trials,
-	// Additional plugins to use with imagemin.{ size:MAX_SIZE_JPEG }
-	use: [jpegoptim()]
-*/
 
 var imageCrunchOptions = {
 	// Select an optimization level between 0 and 7
@@ -155,19 +136,37 @@ gulp.task('clean', function(cb) {
 
 ///////////////////////////////////////////////////////////////////////////////////
 //
-// TASK 	: Jade
+// TASK 	: markup
 // ACTION 	: Compiles Jade files into HTML files in their relevant folders
 //
 ///////////////////////////////////////////////////////////////////////////////////
 
 // here we use the config file to determine how to output the html
-gulp.task('jade', function() {
-	var jade = require('gulp-jade');				// convert jade to html
+gulp.task('markup', function() {
+	var pug = require('gulp-pug');				// convert jade to html
 	var htmlmin = require('gulp-htmlmin');			// squish html
-	return 	gulp.src( source.jade )
-			.pipe( gulpif( squish, jade( { pretty:false, debug:false, compileDebug:false } ), jade( { pretty:true, debug:false, compileDebug:false } ) ) )
-			.pipe( gulpif( squish, htmlmin(htmlSquishOptions)) )	// ugly code but smaller
-			.pipe( gulp.dest( destination.html ) );
+	var data = require('gulp-data');			// squish html
+
+  return 	gulp.src( source.markup )
+    .pipe(data(function(file) {
+        console.log(source.data, path.basename(file.path, '.pug')+".txt");
+        var dataPath = path.join( source.data, path.basename(file.path,'.pug')+".txt");
+        var fileData = fs.readFileSync( dataPath, 'utf-8');
+        var fileObject = fileData.split("\r\n");
+        var fileString = '{"cards":["'+fileObject.join('","')+'"]}';
+        //fs.writeFile( path.basename(file.path,'.pug')+".log", fileString, 'utf8');
+        //console.log( fileString );
+				var fileJSON = JSON.parse( fileString );
+        //console.log( fileJSON );
+        return fileJSON;
+        //return require(dataPath);
+      }))
+		.pipe( gulpif( squish,
+      pug( { pretty:false, debug:false, compileDebug:false } ),
+      pug( { pretty:true, debug:false, compileDebug:false } )
+     ) )
+		.pipe( gulpif( squish, htmlmin(htmlSquishOptions)) )	// ugly code but smaller
+		.pipe( gulp.dest( destination.html ) );
 });
 
 // Here we create our data models from the txt files...
@@ -175,7 +174,17 @@ gulp.task('jade', function() {
 // then we create JSON versions (just a comma seperated array object)
 // and save them in the json folder...
 gulp.task('data', function() {
-	return 	gulp.src( source.jade )
+  // load all files in folder...
+
+	return 	gulp.src( source.data+'**/*' )
+		.pipe( gulp.dest( destination.html ) );
+});
+
+// loads the data from the text files and creates json
+// then inject those into the template with pipe
+gulp.task('template', function() {
+    // load all files in folder...
+	return 	gulp.src( source.markup )
 		.pipe( gulp.dest( destination.html ) );
 });
 
@@ -253,16 +262,16 @@ gulp.task('vendor',function(){
 gulp.task('scripts', function() {
     // Minify and copy all JavaScript (except vendor scripts)
     // with sourcemaps all the way down
-    var uglify = require('gulp-uglify');            // squash
+  var uglify = require('gulp-uglify');            // squash
 	var jshint = require('gulp-jshint');			// lint!
 	var concat = require('gulp-concat');			// combine files
 	// var sourcemaps = require('gulp-sourcemaps');    // create source maps for debugging!
 	return  gulp.src( source.scripts )
-            .pipe( concat('main.js') )
-    		.pipe( gulpif( squish, uglify() ) )
+      .pipe( concat('main.js') )
+  		.pipe( gulpif( squish, uglify() ) )
 			.pipe( jshint('.jshintrc'))
 			.pipe( jshint.reporter('default') )
-            .pipe( gulp.dest( destination.scripts ) );
+      .pipe( gulp.dest( destination.scripts ) );
 });
 
 
@@ -280,7 +289,7 @@ gulp.task('watch', function() {
 	// Watch any files in build/, reload on change
 	gulp.watch( watch.scripts	, ['scripts'] );
 	gulp.watch( watch.styles 	, ['less'] );
-	gulp.watch( watch.jade  	, ['jade'] );
+	gulp.watch( watch.markup  	, ['markup'] );
 	gulp.watch( watch.images 	, ['images'] );
 	gulp.watch( watch.fonts  	, ['copy'] );
 
@@ -307,7 +316,7 @@ gulp.task('server', function() {
 ///////////////////////////////////////////////////////////////////////////////////
 
 // compile all assets & create sourcemaps
-gulp.task('build', 	[ 'less', 'jade', 'images', 'scripts','vendor', 'fonts' ] );
+gulp.task('build', 	[ 'less', 'markup', 'images', 'scripts','vendor', 'fonts', 'data' ] );
 
 // create a server to host this project
 gulp.task('serve', 		['build', 'server', 'watch'] );

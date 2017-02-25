@@ -1,4 +1,3 @@
-include ../mixins/footer
 include ../mixins/menu
 
 //- Begin ===============================================================================
@@ -6,13 +5,13 @@ html
 
 	head
 		meta(charset='utf-8')
-		title O B L I Q U E . S T R A T E G I E S . v . I
+		title OBLIQUE . STRATEGIES
 
 		//- Prevent scaling  and pinch zoomming on touch enabled devices
 		meta(name='viewport', content='user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1')
 		meta(name='description', content='Oblique Strategies - Inspirational help')
-		meta(name='author', content='@designerzen')
-
+		meta(name='author', content='brian eno, harold schmidt, designerzen')
+		meta(name="msapplication-tap-highlight", content="no")
 		link(rel='stylesheet', href='css/styles.css')
 		script(src='js/vendor/modernizr/modernizr-2.6.2-respond-1.1.0.min.js')
 
@@ -20,7 +19,7 @@ html
 
 		header
 			h1 Oblique Strategies
-			h2 Inspiration at everytime
+			h2 Simplified Inspiration
 
 			nav#main-menu
 				ul
@@ -39,13 +38,14 @@ html
 						li.reload
 							a Shuffle Deck
 
-				footer
-					block footer
+					footer
+						block footer
 
 		//- Main Footer ===============================================================================
-		+footer()
+		include ../partials/footer
+			include ../partials/social
 
-	//- Javascripts ===============================================================================
-	script(src='js/load.js')
-	//if (gte IE 6)&(lte IE 10)
-		script(src='js/vendor/selectivizr/selectivizr-min.js')
+		//- Javascripts ===============================================================================
+		script(src='js/main.js',defer,async)
+		//if (gte IE 6)&(lte IE 10)
+			script(src='js/vendor/selectivizr/selectivizr-min.js')
