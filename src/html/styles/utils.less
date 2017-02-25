@@ -7,4 +7,17 @@
 // .visuallyhidden and .focusabe use only .focusable class.
 .focusable () { .visuallyhidden;&:active,&:focus{clip: auto; height: auto; margin: 0; overflow: visible; position: static; width: auto;}}
 
+/* Mixin to generate random number;
+   int should be 0 or 1, 1 being to make it an integer
+   https://stackoverflow.com/questions/19869023/generate-random-number-in-less-css
+*/
+.makeRandom(@min: 0, @max: @min+1, @int: 0) {
+  .checkInt() {
+    @getNum: `Math.random() * (@{max} - @{min} + @{int})`;
+    @base: unit(`@{int} == 1 ? Math.floor(@{getNum}) : @{getNum}`);
+  }
+  .checkInt();
+  @randNum: @base + @min;
+}
+
 .visuallyhidden {  .visuallyhidden(); }

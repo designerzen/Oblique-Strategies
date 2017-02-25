@@ -95,6 +95,8 @@ var rename = require('gulp-rename');			// rename files
 var connect = require('gulp-connect');			// live reload capable server for files
 var livereload = require('gulp-livereload');	// live reload
 
+var decksData = fs.readFileSync( path.join(source.data,"decks.json"), 'utf-8');
+var decksJSON = JSON.parse( decksData );
 
 var imageCrunchOptions = {
 	// Select an optimization level between 0 and 7
@@ -159,8 +161,11 @@ gulp.task('markup', function() {
         //fs.writeFile( path.basename(file.path,'.pug')+".log", fileString, 'utf8');
         //console.log( fileString );
 				var fileJSON = JSON.parse( fileString );
+        // now merge these two objects...
+        // decksJSON  fileJSON
+
         //console.log( fileJSON );
-        return fileJSON;
+        return Object.assign({}, fileJSON, decksJSON);
         //return require(dataPath);
       }))
 		.pipe( gulpif( squish,

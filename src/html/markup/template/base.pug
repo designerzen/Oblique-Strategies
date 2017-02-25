@@ -1,4 +1,5 @@
 include ../mixins/menu
+include ../mixins/more
 
 //- Begin ===============================================================================
 html
@@ -23,7 +24,7 @@ html
 
 			nav#main-menu
 				block menu
-					+navigation()
+					+navigation(decks, 0)
 
 		//- Content ==================================================================================
 		main#content
@@ -36,7 +37,10 @@ html
 						block cards
 						//- Reload the entire Deck!
 						li.reload
+							p.visuallyhidden This is the last card from this pack. Select another pack or to shuffle this pack and view it again.
 							a#shuffle Shuffle Deck
+							block reload
+								+more(decks,0)
 
 					footer
 						block footer

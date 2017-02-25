@@ -1,0 +1,29 @@
+{
+  "decks":[
+
+    {
+      "name":"I",
+      "title":"Oblique Strategies v1",
+      "description":"",
+      "link":"1.html"
+    },
+    {
+      "name":"II",
+      "title":"Oblique Strategies v1",
+      "description":"",
+      "link":"2.html"
+    },
+    {
+      "name":"III",
+      "title":"Oblique Strategies v1",
+      "description":"",
+      "link":"3.html"
+    },
+    {
+      "name":"11",
+      "title":"Jodorowsky Strategies",
+      "description":"",
+      "link":"11.html"
+    }
+  ]
+}

@@ -2,16 +2,20 @@ extends template/base
 
 include mixins/cards
 include mixins/menu
+include mixins/more
 
 block header
 	h3 Third Version
 	h4 1979
 
 block menu
-	+navigation(3)
+	+navigation(decks,3)
 
 block cards
 	+pack(cards, "III")
+
+block reload
+	+more(decks)
 
 block footer
 	p.info 1979

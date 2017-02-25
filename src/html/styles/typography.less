@@ -48,7 +48,7 @@ strong{
 }
 h1,h2,h3,h4,h5,h6{
 	text-transform:uppercase;
-	padding-left:22px;
+	//padding-left:22px;
 }
 small{
 	color: @grey;
@@ -56,10 +56,9 @@ small{
 a{
 	color:@neutral;
 	background-color:@dark;
-	transition:all 0.5s;
-	border-radius: 4px;
-	padding:4px 8px;
+	transition:background-color 0.5s ease-out, color 0.3s ease-in;
   text-decoration:none;
+
 	&:hover{
 		color:@dark;
 		background-color:@neutral;

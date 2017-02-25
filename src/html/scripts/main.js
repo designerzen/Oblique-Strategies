@@ -21,7 +21,8 @@
 
 		isActive = true,
 		isBusy = false,
-		index = 0,
+		deckSize = deck.children.length - 1,
+		remaining = deckSize,
 		idleSecondsCounter = 0,
 		timer = -1,
     limiter = -1,
@@ -71,9 +72,9 @@
 	}
 
 	// Moves all the LI elements around in the deck
-	function shuffleDeck()
+	function shuffleDeck( )
 	{
-		for (var i = deck.children.length - 1; i >= 0; --i)
+    for (var i = deckSize; i >= 0; --i)
 		{
 			var kid = deck.children[ Math.random() * i | 0 ];
 			deck.appendChild( kid );
@@ -82,15 +83,16 @@
 	}
 
 	// Reset the UI
-	function reset()
+	function reset( shuffle )
 	{
-		for (var i = world.children.length - 1; i >= 0; --i)
-		{
-			var kid = world.children[ i ];
-			kid.className = '';
-		}
+    if (shuffle) shuffleDeck();
 
-    index = 0
+		for (var i = deckSize; i >= 0; --i)
+		{
+			var kid = deck.children[ i ];
+			kid.className = 'card card-'+(deckSize-i+1);
+		}
+    remaining = deckSize;
 	}
 
 	// Some handy methods with older browser support
@@ -173,7 +175,7 @@
 
   function swipeNextCard( direction )
   {
-    var card = cards[index++];
+    var card = cards[ deckSize-remaining ];
     switch( direction )
 		{
 			case Hammer.DIRECTION_UP :
@@ -196,14 +198,30 @@
       //
 				addClass( card, getRandomDirection() );
 		}
-    onCardInteraction(card);
+    // remove remaining or end...
+    if  (remaining > 0)
+    {
+      remaining--;
+      onCardInteraction(card);
+    }else{
+      // No more cards!
+      onDeckEmpty();
+    }
   }
 	// EVENTS! ==========================================================
+
+
   function onCardInteraction(card)
   {
     console.log(card);
   }
-	function onMouseDown(e)
+  function onDeckEmpty()
+  {
+    console.log("onDeckEmpty of card");
+    reset(true);
+  }
+
+  function onMouseDown(e)
 	{
 		e = e || window.event;
 
@@ -227,12 +245,11 @@
 		// check to see if there is a reload class...
 		if ( hasClass( e.target, 'reload' ))
 		{
-			reset();
+			reset( true );
 			return;
 		}
 
     swipeNextCard();
-
 	}
 
 	function onMouseWheel(event)
@@ -264,7 +281,10 @@
 			// rotate deck
 			x += event.gesture.deltaX;
 			y += event.gesture.deltaY;
-			update();
+      console.error( event.gesture, event);
+      //x = ( 0.5 - ( event.clientY / window.innerHeight ) ) * 180;
+  		//y = ( 0.5 - ( event.clientX / window.innerWidth ) ) * -180;
+  		update();
 		}else{
 			onSwipe( event );
 		}
@@ -337,7 +357,7 @@
 
 	function onDOMReady()
 	{
-		shuffleDeck();
+		reset(true);
 		timer = window.setInterval(checkIdleTime, 1000);
 		// remove class names from body
 		removeClass( docBody, "loading" );
@@ -372,8 +392,7 @@
   shuffleButton.onclick = function(){
     if (cards.length >1)
     {
-      shuffleDeck();
-      reset();
+      reset(true);
     }else{
       // goto a random page!
       window.location = "1.html";

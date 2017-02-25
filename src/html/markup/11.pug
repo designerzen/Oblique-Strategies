@@ -2,16 +2,20 @@ extends template/base
 
 include mixins/cards
 include mixins/menu
+include mixins/more
 
 block header
 	h3 Jodorowsky Version
 	h4 1985
 
 block menu
-	+navigation(11)
+	+navigation(decks,11)
 
 block cards
 	+pack(cards, "11")
+
+block reload
+	+more(decks)
 
 block footer
 	p.info 1985
