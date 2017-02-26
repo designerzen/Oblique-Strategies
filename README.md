@@ -1,4 +1,6 @@
 Oblique-Strategies
 ==================
 
-Web version of Eno's Oblique Strategy Cards using CSS3
+Web version of Brian Eno's Oblique Strategy Cards
+
+[ Instant Inspiration ](https://designerzen.github.io/Oblique-Strategies/)

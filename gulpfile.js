@@ -106,8 +106,7 @@ var imageCrunchOptions = {
 	// Interlace gif for progressive rendering.
 	interlaced : false
 };
-
-
+var remoteURL = 'designerzen@github.com:' + packageJson.repository.url.replace( 'https://github.com/', '');
 // How much to squish HTML
 // All options : https://github.com/kangax/html-minifier
 var htmlSquishOptions = {
@@ -319,8 +318,10 @@ gulp.task('server', function() {
 });
 gulp.task('deploy',['build'], function() {
     var ghPages = require('gulp-gh-pages');
+    console.log("Uploading to "+remoteURL);
     return gulp.src(BUILD_FOLDER+'**/*')
-      .pipe(ghPages());
+      .pipe(ghPages({ }));
+      //.pipe(ghPages({remoteUrl: remoteURL }));
 });
 
 ///////////////////////////////////////////////////////////////////////////////////
