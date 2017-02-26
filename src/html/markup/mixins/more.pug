@@ -1,5 +1,0 @@
-//- view more for at the shuffle part
-mixin more( decks,active )
-  ul.more
-    each deck, index in decks
-      li.deck(class=active === index ? 'active' : ''): a(href=deck.link, alt=deck.description) #{deck.name}
