@@ -218,7 +218,12 @@
   function onDeckEmpty()
   {
     console.log("onDeckEmpty of card");
-    reset(true);
+    if (deckSize > 1)
+		{
+			reset(true);
+		}else{
+			// goto next!
+		}
   }
 
   function onMouseDown(e)
@@ -361,7 +366,12 @@
 		reset(true);
 		timer = window.setInterval(checkIdleTime, 1000);
 		// remove class names from body
+
 		removeClass( docBody, "loading" );
+		if (deckSize > 1)
+		{
+			addClass( docBody, "empty" );
+		}
 		console.log('LOADED ====================== ');
 	}
 
