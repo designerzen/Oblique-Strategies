@@ -5,10 +5,20 @@ const { decks } = JSON.parse(readFileSync('src/data/decks.json', 'utf8'))
 const cardsFor = id => readFileSync(`src/data/${id}.txt`, 'utf8').split(/\r?\n/).map(text => text.trim()).filter(Boolean)
 const visibleCard = page => page.locator('#deck > .card:not(.reload)[aria-hidden="false"]')
 
+// Data/layout tests use a neutral camera; camera motion has its own test below.
+async function useNeutralCamera(page) {
+  await page.addInitScript(() => {
+    for (const type of ['mousemove', 'deviceorientation', 'devicemotion', 'MozOrientation']) {
+      window.addEventListener(type, event => event.stopImmediatePropagation(), true)
+    }
+  })
+}
+
 for (const deck of decks) {
   test(`${deck.id}: original stack, every strategy, reload and shuffle`, async ({ page }) => {
     const errors = []
     page.on('pageerror', error => errors.push(error.message))
+    await useNeutralCamera(page)
     await page.goto(deck.link)
     await expect(page.locator('body')).not.toHaveClass(/loading/)
     const source = cardsFor(deck.id)
@@ -29,7 +39,11 @@ for (const deck of decks) {
     expect(new Set(seen.map(card => card.id)).size).toBe(source.length)
     await expect(page.locator('#deck > .reload')).toHaveAttribute('aria-hidden', 'false')
     expect(await page.locator('#deck').evaluate(deck => deck.lastElementChild.classList.contains('reload'))).toBe(true)
-    await page.locator('#shuffle').click({ force: true })
+    // Normal actionability checks must wait for the button to be stable and
+    // receive input. A forced mouse click could miss the moving 3D surface.
+    const shuffle = page.locator('#shuffle')
+    if (test.info().project.name === 'mobile') await shuffle.tap()
+    else await shuffle.click()
     await expect(visibleCard(page)).toHaveCount(1)
     await expect(page.locator('#deck > .reload')).toHaveAttribute('aria-hidden', 'true')
     await expect(page.locator('body')).not.toHaveClass(/complete/)
@@ -40,11 +54,7 @@ for (const deck of decks) {
   test(`${deck.id}: hashes, directional tap and longest card fit`, async ({ page }) => {
     // Measure layout in the neutral camera pose. Unsolicited pointer/sensor
     // events can rotate the 3D stack on a runner; camera motion is tested below.
-    await page.addInitScript(() => {
-      for (const type of ['mousemove', 'deviceorientation', 'devicemotion', 'MozOrientation']) {
-        window.addEventListener(type, event => event.stopImmediatePropagation(), true)
-      }
-    })
+    await useNeutralCamera(page)
     const source = cardsFor(deck.id)
     const longest = source.reduce((best, text, i) => text.length > source[best].length ? i : best, 0)
     await page.goto(`${deck.link}#${deck.id}/card-${longest + 1}`)
