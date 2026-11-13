@@ -49,6 +49,14 @@ for (const deck of decks) {
     const longest = source.reduce((best, text, i) => text.length > source[best].length ? i : best, 0)
     await page.goto(`${deck.link}#${deck.id}/card-${longest + 1}`)
     await expect(visibleCard(page)).toHaveText(source[longest])
+    // Even if sensor or pointer noise arrives, this test must retain that pose.
+    await page.evaluate(() => {
+      window.dispatchEvent(new DeviceOrientationEvent('deviceorientation', { beta: 30, gamma: 40 }))
+      window.dispatchEvent(new MouseEvent('mousemove', { clientX: 0, clientY: 0 }))
+    })
+    expect(await page.locator('#deck').evaluate(deck =>
+      new DOMMatrix(getComputedStyle(deck).transform).isIdentity
+    )).toBe(true)
     await page.evaluate(() => document.fonts.ready)
     // Shuffling and restoring the hash can start transform transitions. Font
     // readiness doesn't mean those have finished, especially on slower runners.
