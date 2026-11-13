@@ -43,11 +43,23 @@ for (const deck of decks) {
     await page.goto(`${deck.link}#${deck.id}/card-${longest + 1}`)
     await expect(visibleCard(page)).toHaveText(source[longest])
     await page.evaluate(() => document.fonts.ready)
+    // Shuffling and restoring the hash can start transform transitions. Font
+    // readiness doesn't mean those have finished, especially on slower runners.
+    await expect.poll(() => visibleCard(page).evaluate(card =>
+      card.getAnimations().filter(animation => animation.playState === 'running').length
+    )).toBe(0)
     expect(await visibleCard(page).evaluate(card => card.scrollHeight <= card.clientHeight && card.scrollWidth <= card.clientWidth)).toBe(true)
     const bounds = await visibleCard(page).boundingBox()
     const size = page.viewportSize()
-    expect(bounds.x).toBeGreaterThanOrEqual(0)
-    expect(bounds.x + bounds.width).toBeLessThanOrEqual(size.width)
+    const geometry = await visibleCard(page).evaluate(card => ({
+      viewportWidth: innerWidth,
+      cardWidth: getComputedStyle(card).width,
+      transform: getComputedStyle(card).transform,
+      deck: document.querySelector('#deck').getBoundingClientRect().toJSON(),
+    }))
+    const details = JSON.stringify({ bounds, size, ...geometry })
+    expect(bounds.x, details).toBeGreaterThanOrEqual(0)
+    expect(bounds.x + bounds.width, details).toBeLessThanOrEqual(size.width)
     const id = await visibleCard(page).getAttribute('id')
     const point = { x: bounds.x + bounds.width * .85, y: bounds.y + bounds.height * .5 }
     if (test.info().project.name === 'mobile') await page.touchscreen.tap(point.x, point.y)
