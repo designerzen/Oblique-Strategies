@@ -4,7 +4,7 @@ mixin pack( cards )
   each card, index in cards
     //- var classes = ['card-'+(q-index), 'card']
     - var classes = ['card-'+(index+1), 'card']
-    li(class=classes)= card
+    li(class=classes, id='card-' + (index + 1))= card
     //-
       li(class=classes)
         a(href="#")= card

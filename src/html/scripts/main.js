@@ -1,3 +1,6 @@
+import Hammer from 'hammerjs';
+import '../styles/styles.less';
+
 (function() {
 	"use strict";
 
@@ -21,6 +24,7 @@
 
 		isActive = true,
 		isBusy = false,
+		gestureHandled = false,
 		deckSize = deck.children.length - 1,
 		remaining = deckSize,
 		idleSecondsCounter = 0,
@@ -32,6 +36,9 @@
 		y = 0,
 		z = 0,
 		currentTransform = 'translateZ( '+z+'px ) rotateX( '+x+'deg) rotateY( '+y+'deg)';
+		var version = document.location.pathname.split('/').pop().replace('.html', '');
+		var lerpX = x, lerpY = y, lerpZ = z;
+		var frame = 0;
 
 
 		// Browsers
@@ -48,6 +55,7 @@
 		var OPERA = (navigator.userAgent.toString().toLowerCase().indexOf("opera")!=-1) ;
 		function setTransform( element, transform )
 		{
+			element.transform = transform;
 			element.webkitTransform = transform;
 			if (FIREFOX) element.MozTransform = transform;
 			if (OPERA) element.oTransform = transform;
@@ -63,22 +71,33 @@
 	*/
 	function update()
 	{
+		cancelAnimationFrame(frame);
 		if (!isActive) return;
-		var transform = 'translateZ( '+z+'px ) rotateX( '+x+'deg) rotateY( '+y+'deg)';
+		lerpX += (x - lerpX) / 10;
+		lerpY += (y - lerpY) / 10;
+		lerpZ += (z - lerpZ) / 10;
+		var transform = 'translateZ( '+lerpZ+'px ) rotateX( '+lerpX+'deg) rotateY( '+lerpY+'deg)';
 		if ( currentTransform === transform ) return;
 		currentTransform = transform;
 		setTransform( world.style, transform );
-		onUserActive();
+		if (Math.abs(x - lerpX) + Math.abs(y - lerpY) + Math.abs(z - lerpZ) > 0.01) {
+			frame = requestAnimationFrame(update);
+		}
 	}
 
 	// Moves all the LI elements around in the deck
 	function shuffleDeck( )
 	{
-    for (var i = deckSize; i >= 0; --i)
-		{
-			var kid = deck.children[ Math.random() * i | 0 ];
-			deck.appendChild( kid );
-		}
+    // Keep the reload panel at the back; shuffle only strategy cards.
+    var strategies = Array.from(deck.querySelectorAll('.card:not(.reload)'));
+    for (var i = strategies.length - 1; i > 0; --i) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var swap = strategies[i];
+      strategies[i] = strategies[j];
+      strategies[j] = swap;
+    }
+    strategies.forEach(function(card) { deck.appendChild(card); });
+    deck.appendChild(deck.querySelector('.reload'));
     cards = deck.getElementsByClassName( 'card' );
 	}
 
@@ -90,9 +109,14 @@
 		for (var i = deckSize; i >= 0; --i)
 		{
 			var kid = deck.children[ i ];
-			kid.className = 'card card-'+(deckSize-i+1);
+			kid.className = (kid.classList.contains('reload') ? 'reload ' : '') + 'card card-'+(deckSize-i+1);
+			kid.setAttribute('aria-hidden', i === 0 ? 'false' : 'true');
 		}
     remaining = deckSize;
+    isBusy = false;
+    clearTimeout(limiter);
+    docBody.classList.toggle('empty', deckSize === 0);
+    docBody.classList.remove('complete');
 	}
 
 	// Some handy methods with older browser support
@@ -175,6 +199,8 @@
 
   function swipeNextCard( direction )
   {
+    if (deckSize === 0) return;
+    if (remaining === 0) { onDeckEmpty(); return; }
     var card = cards[ deckSize-remaining ];
     switch( direction )
 		{
@@ -202,6 +228,9 @@
     if  (remaining > 0)
     {
       remaining--;
+      card.setAttribute('aria-hidden', 'true');
+      cards[deckSize-remaining].setAttribute('aria-hidden', 'false');
+      if (remaining === 0) docBody.classList.add('complete');
       onCardInteraction(card);
     }else{
       // No more cards!
@@ -213,11 +242,10 @@
 
   function onCardInteraction(card)
   {
-    console.log(card);
+    if (remaining > 0) history.replaceState(null, '', '#' + version + '/' + cards[deckSize-remaining].id);
   }
   function onDeckEmpty()
   {
-    console.log("onDeckEmpty of card");
     if (deckSize > 1)
 		{
 			reset(true);
@@ -261,7 +289,7 @@
 	{
     onUserActive();
 		event = event ? event : window.event;	// event may be empty so use as fallback
-		z = z-( event.detail ? event.detail*-5 : event.wheelDelta/8 );
+		z += event.deltaY / 8;
 		update();
 
 		if (event.preventDefault) event.preventDefault();
@@ -281,13 +309,12 @@
 	{
 		var node = event.target;
     onUserActive();
-    console.error( event.gesture, event);
+		if (node.closest('.reload')) return;
 		if ( node.nodeName.toLowerCase() != 'li' )
 		{
 			// rotate deck
-			x += event.gesture.deltaX;
-			y += event.gesture.deltaY;
-      console.error( event.gesture, event);
+			x += event.deltaX;
+			y += event.deltaY;
       //x = ( 0.5 - ( event.clientY / window.innerHeight ) ) * 180;
   		//y = ( 0.5 - ( event.clientX / window.innerWidth ) ) * -180;
   		update();
@@ -308,17 +335,18 @@
 		onUserActive();
 		//console.log( "swipe isBusy;"+isBusy, event.target );
 
-    if (isBusy)
+    if (isBusy || gestureHandled)
     {
       return;
     }
 
 		// check to see if there is a reload class...
-		if ( hasClass( node, 'reload' )  ) return;
+		if (node.closest('.reload')) return;
 
 		// determine length and speed!
 
 		// console.log(  event.gesture.direction + '   ' + Hammer.DIRECTION_UP );
+    gestureHandled = true;
     swipeNextCard(event.direction);
 
     isBusy = true;
@@ -328,9 +356,10 @@
 	function onTap( event )
 	{
 		onUserActive();
+		if (gestureHandled) return;
 
 		// check to see if there is a reload class...
-		if ( hasClass( event.target, 'reload' ) ) return;
+		if (event.target.closest('.reload')) return;
 
     var percentageX = event.center.x / window.innerWidth;
     var percentageY = event.center.y / window.innerHeight;
@@ -349,6 +378,8 @@
 
 	function onTilt( ax, ay )
 	{
+		if (!Number.isFinite(ax) || !Number.isFinite(ay)) return;
+		onUserActive();
 		x += ax;
 		y += ay;
 		update();
@@ -359,20 +390,38 @@
 		// if the arrow keys are pushed, focus the viewport onto that layer...
 		// layers[];
 		onUserActive();
+		if (event.target.closest('a, button, input, textarea, select, [contenteditable]')) return;
+		if (['Enter', ' ', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+			event.preventDefault();
+			swipeNextCard();
+		}
 	}
+
+	function restoreHash() {
+		var parts = location.hash.slice(1).split('/');
+		if (!parts[1] || parts[0] !== version) return;
+		var requested = deck.querySelector('#' + CSS.escape(parts[1]));
+		if (!requested || requested.classList.contains('reload')) return;
+		reset(false);
+		while (remaining > 0 && cards[deckSize-remaining] !== requested) {
+			var card = cards[deckSize-remaining];
+			card.classList.add('hide-instant');
+			card.setAttribute('aria-hidden', 'true');
+			remaining--;
+		}
+		requested.setAttribute('aria-hidden', 'false');
+	}
+	window.addEventListener('hashchange', restoreHash);
 
 	function onDOMReady()
 	{
 		reset(true);
+		docBody.classList.add('version-' + (version || 'index'));
+		restoreHash();
 		timer = window.setInterval(checkIdleTime, 1000);
 		// remove class names from body
 
 		removeClass( docBody, "loading" );
-		if (deckSize > 1)
-		{
-			addClass( docBody, "empty" );
-		}
-		console.log('LOADED ====================== ');
 	}
 
 	function onUserActive()
@@ -401,9 +450,10 @@
 
   var shuffleButton = document.getElementById('shuffle');
   shuffleButton.onclick = function(){
-    if (cards.length >1)
+    if (deckSize > 0)
     {
       reset(true);
+      history.replaceState(null, '', location.pathname + location.search);
     }else{
       // goto a random page!
       window.location = "1.html";
@@ -412,17 +462,18 @@
   };
 
 	// Now hook into our window events
-	window.addEventListener('mousewheel',onMouseWheel, true);
+	window.addEventListener('wheel',onMouseWheel, { passive: false });
 	// Event listener to transform mouse position into angles from -180 to 180 degress, both vertically and horizontally
 	window.addEventListener('mousemove',onMouseMove, true);
 	// listen for key presses
-	window.addEventListener('keypress',onKeyDown, true);
+	window.addEventListener('keydown',onKeyDown, true);
 
 
 	// watch also for key events and use the left and right arrow keys to focus the viewport onto that element :
 	//document.body.addEventListener("click", onMouseDown, true);
 	// watch for DOM elements to be available
-	window.onload = onDOMReady;
+	if (document.readyState === 'loading') window.addEventListener('DOMContentLoaded', onDOMReady);
+	else onDOMReady();
 	//var globalID = requestAnimationFrame( update );
 
 	// hold
@@ -436,6 +487,9 @@
 	// touch (gesture detection starts)
 	// release (gesture detection ends)
   touchEvents.get('pinch').set({ enable: true });
+	touchEvents.on('hammer.input', function(event) {
+		if (event.isFirst) gestureHandled = false;
+	});
 	touchEvents.on( "tap", onTap );
 	touchEvents.on( "pan", onSwipe );
 	touchEvents.on( "swipe", onSwipe );
@@ -447,12 +501,12 @@
 	// gyro!
 	if (window.DeviceOrientationEvent)
 	{
-		window.addEventListener("deviceorientation", function () {
+		window.addEventListener("deviceorientation", function (event) {
 			onTilt(event.beta, event.gamma);
 		}, true);
 	} else if (window.DeviceMotionEvent) {
-		window.addEventListener('devicemotion', function () {
-			onTilt(event.acceleration.x * 2, event.acceleration.y * 2);
+		window.addEventListener('devicemotion', function (event) {
+			if (event.acceleration) onTilt(event.acceleration.x * 2, event.acceleration.y * 2);
 		}, true);
 	}else {
 		window.addEventListener("MozOrientation", function (orientation) {

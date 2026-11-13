@@ -2,4 +2,4 @@
 mixin more( decks,active )
   ul.more
     each deck, index in decks
-      li.deck(class=active === index ? 'active' : ''): a(href=deck.link, alt=deck.description) #{deck.name}
+      li.deck(class=String(active) === deck.id ? 'active' : ''): a(href=deck.link, title=deck.title) #{deck.name}

@@ -90,8 +90,14 @@
 
 	// This is the relaod card!
 	.card-1{
-		a#shuffle{
+		#shuffle{
 			user-select:none;
+			border:0;
+			padding:0;
+			font:inherit;
+			color:@neutral;
+			background:@dark;
+			cursor:pointer;
 			display: flex;
 	    justify-content: center;
 	    align-items: center;
@@ -125,7 +131,7 @@
 }
 
 .empty .cards .card-1{
-	a#shuffle{
+	#shuffle{
 		display: none;
 	}
 }
@@ -219,3 +225,20 @@ ul.cards li.hide-down{
 	opacity:0;
 }
 
+
+// Keep the original stack within narrow viewports without changing its desktop size.
+@media (max-width: 460px) {
+  .cards {
+    width: calc(100vw - 32px);
+    height: 260px;
+    margin-left: calc(-50vw + 16px);
+    margin-top: -130px;
+    .card { width: 100%; height: 100%; font-size: 14px; }
+  }
+}
+.cards .hide-instant { visibility: hidden; pointer-events: none; transition: none; }
+.cards { padding: 0; list-style: none; }
+.cards > [aria-hidden='true'] { pointer-events: none; }
+.cards .more a, #main-menu a { display: inline-block; }
+#main-menu { position: fixed; }
+#main-menu a:focus-visible, #shuffle:focus-visible { outline: 2px solid white; outline-offset: 2px; }
