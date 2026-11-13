@@ -1,29 +1,9 @@
 {
-  "decks":[
-
-    {
-      "name":"I",
-      "title":"Oblique Strategies v1",
-      "description":"",
-      "link":"1.html"
-    },
-    {
-      "name":"II",
-      "title":"Oblique Strategies v1",
-      "description":"",
-      "link":"2.html"
-    },
-    {
-      "name":"III",
-      "title":"Oblique Strategies v1",
-      "description":"",
-      "link":"3.html"
-    },
-    {
-      "name":"11",
-      "title":"Jodorowsky Strategies",
-      "description":"",
-      "link":"11.html"
-    }
+  "decks": [
+    { "id": "1", "name": "I", "title": "First edition", "year": "1975", "link": "1.html", "description":"Brian Eno`s Oblique Strategies Set 1" },
+    { "id": "2", "name": "II", "title": "Second edition", "year": "1978", "link": "2.html", "description":"Brian Eno`s Oblique Strategies Set 2" },
+    { "id": "3", "name": "III", "title": "Third edition", "year": "1979", "link": "3.html", "description":"Brian Eno`s Oblique Strategies Set 3" },
+    { "id": "4", "name": "IV", "title": "Fourth edition", "year": "1989", "link": "4.html", "description":"Brian Eno`s Oblique Strategies Set 4" },
+    { "id": "11", "name": "J", "title": "Jodorowsky Strategies", "year": "1985", "link": "11.html", "description":"Alexander Jodorowsky`s Strategies" }
   ]
 }
