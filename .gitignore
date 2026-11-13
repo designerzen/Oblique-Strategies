@@ -3,6 +3,7 @@ dev
 build
 dist
 deploy
+test
 release
 .git
 .tmp
@@ -12,4 +13,5 @@ bower_components
 *.DS_Store
 *.log
 pnpm-lock.yaml
-package-lock.json
+test-results/
+playwright-report/
