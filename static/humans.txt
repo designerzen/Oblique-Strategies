@@ -1,0 +1,16 @@
+# humanstxt.org/
+# The humans responsible & technology colophon
+
+# TEAM
+
+    designerzen -- maker -- @designerzen
+
+# THANKS
+
+    Brian eno
+    Harold Schmidt
+
+# TECHNOLOGY COLOPHON
+
+    CSS3, HTML5
+    Github, Gulp

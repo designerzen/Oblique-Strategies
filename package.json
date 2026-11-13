@@ -6,7 +6,9 @@
   "description": "Oblique Strategies and Jodorowsky inspiration cards",
   "repository": "github:designerzen/Oblique-Strategies",
   "author": "designerzen",
-  "engines": { "node": ">=22.12.0" },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "start": "vite",
     "dev": "vite",
@@ -16,6 +18,11 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.65.0",
+    "less": "^4.6.7",
+    "pug": "^3.0.4",
     "vite": "^8.3.8"
+  },
+  "dependencies": {
+    "hammerjs": "^2.0.8"
   }
 }
