@@ -1,11 +1,20 @@
 import { defineConfig } from 'vite'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, resolve } from 'node:path'
 import pug from 'pug'
 
 const { decks } = JSON.parse(readFileSync('src/data/decks.json', 'utf8'))
 const pages = ['index', ...decks.map(deck => deck.id), 'flash']
 const cardData = page => readFileSync(`src/data/${page}.txt`, 'utf8').split(/\r?\n/).map(card => card.trim()).filter(Boolean)
+
+// Vite needs physical HTML entries before transformIndexHtml runs.
+// Create placeholders from the tracked metadata, including on clean checkouts.
+for (const page of pages) {
+  const entry = resolve('src/html', `${page}.html`)
+  if (!existsSync(entry)) {
+    writeFileSync(entry, '<!-- Vite renders markup templates before processing scripts and styles. -->\n')
+  }
+}
 
 export default defineConfig({
   root: 'src/html',

@@ -28,7 +28,7 @@ npm run preview
 
 The static output is in `dist/`, with bundled scripts, styles and fonts. Relative URLs support root hosting and GitHub Pages project subdirectories. Playwright tests run against the production build under `/Oblique-Strategies/` on desktop and mobile Chromium, covering all five decks, every strategy, shuffling, the reload panel, directional taps, card links, mouse rotation, zoom, simulated device tilt, idle fading and narrow-screen layout.
 
-The existing per-deck Pug templates in `src/html/markup` are the source of the HTML. The small `.html` files are Vite entry points; edit the Pug templates to change markup. Card text lives in `src/data/*.txt` and the menu metadata is in `src/data/decks.json`. Source card IDs such as `4.html#4/card-12` remain stable through shuffling. Invalid card hashes are ignored safely.
+The existing per-deck Pug templates in `src/html/markup` are the source of the HTML. Vite generates the ignored `.html` entry placeholders automatically, including on clean checkouts; edit the Pug templates to change markup. Card text lives in `src/data/*.txt` and the menu metadata is in `src/data/decks.json`. Source card IDs such as `4.html#4/card-12` remain stable through shuffling. Invalid card hashes are ignored safely.
 
 ## GitHub Actions
 
