@@ -1,4 +1,4 @@
-@import url(loops.less);
+@import "loops.less";
 
 .makeRandom(1.1, 1.2, 0); /* random integer  10 - 20 */
 @random	:@randNum; //1.1;
@@ -25,3 +25,4 @@
 	&:nth-child(@{from}) {   .child( @name, @from );	}
 	.loop-children( @name,(@from + 1) , @to );	// self iterating... next iteration
 }
+
