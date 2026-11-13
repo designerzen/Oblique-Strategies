@@ -38,7 +38,10 @@ import '../styles/styles.less';
 		currentTransform = 'translateZ( '+z+'px ) rotateX( '+x+'deg) rotateY( '+y+'deg)';
 		var version = document.location.pathname.split('/').pop().replace('.html', '');
 		var lerpX = x, lerpY = y, lerpZ = z;
-		var frame = 0;
+		var frame = null;
+		var lastFrameTime = null;
+		// Match the previous 10% interpolation at 60 Hz, using elapsed time.
+		var smoothingTime = -(1000 / 60) / Math.log(0.9);
 
 
 		// Browsers
@@ -71,19 +74,49 @@ import '../styles/styles.less';
 	*/
 	function update()
 	{
-		cancelAnimationFrame(frame);
-		if (!isActive) return;
-		lerpX += (x - lerpX) / 10;
-		lerpY += (y - lerpY) / 10;
-		lerpZ += (z - lerpZ) / 10;
-		var transform = 'translateZ( '+lerpZ+'px ) rotateX( '+lerpX+'deg) rotateY( '+lerpY+'deg)';
-		if ( currentTransform === transform ) return;
-		currentTransform = transform;
-		setTransform( world.style, transform );
-		if (Math.abs(x - lerpX) + Math.abs(y - lerpY) + Math.abs(z - lerpZ) > 0.01) {
-			frame = requestAnimationFrame(update);
-		}
+		if (!isActive || document.hidden || frame !== null) return;
+		if (lastFrameTime === null) lastFrameTime = performance.now();
+		frame = requestAnimationFrame(renderFrame);
 	}
+
+	function renderFrame(timestamp)
+	{
+		frame = null;
+		if (!isActive || document.hidden) {
+			lastFrameTime = null;
+			return;
+		}
+		var elapsed = Math.max(0, timestamp - lastFrameTime);
+		lastFrameTime = timestamp;
+		var blend = -Math.expm1(-elapsed / smoothingTime);
+		lerpX += (x - lerpX) * blend;
+		lerpY += (y - lerpY) * blend;
+		lerpZ += (z - lerpZ) * blend;
+		var settled = Math.abs(x - lerpX) + Math.abs(y - lerpY) + Math.abs(z - lerpZ) <= 0.01;
+		if (settled) {
+			lerpX = x;
+			lerpY = y;
+			lerpZ = z;
+		}
+		var transform = 'translateZ( '+lerpZ+'px ) rotateX( '+lerpX+'deg) rotateY( '+lerpY+'deg)';
+		if (currentTransform !== transform) {
+			currentTransform = transform;
+			setTransform(world.style, transform);
+		}
+		if (settled) lastFrameTime = null;
+		else update();
+	}
+
+	function stopAnimation()
+	{
+		if (frame !== null) cancelAnimationFrame(frame);
+		frame = null;
+		lastFrameTime = null;
+	}
+	document.addEventListener('visibilitychange', function() {
+		if (document.hidden) stopAnimation();
+		else update();
+	});
 
 	// Moves all the LI elements around in the deck
 	function shuffleDeck( )
@@ -430,6 +463,7 @@ import '../styles/styles.less';
 		if ( isActive ) return;
 		isActive = true;
 		removeClass( docBody, "inactive" );
+		update();
 		//console.log('ACTIVE ====================== ');
 	}
 
@@ -438,6 +472,7 @@ import '../styles/styles.less';
 	{
 		if (!isActive ) return;
 		isActive = false;
+		stopAnimation();
 		addClass( docBody, "inactive" );
 		//console.log('INACTIVE ====================== ');
 	}
