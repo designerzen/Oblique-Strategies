@@ -38,6 +38,13 @@ for (const deck of decks) {
   })
 
   test(`${deck.id}: hashes, directional tap and longest card fit`, async ({ page }) => {
+    // Measure layout in the neutral camera pose. Unsolicited pointer/sensor
+    // events can rotate the 3D stack on a runner; camera motion is tested below.
+    await page.addInitScript(() => {
+      for (const type of ['mousemove', 'deviceorientation', 'devicemotion', 'MozOrientation']) {
+        window.addEventListener(type, event => event.stopImmediatePropagation(), true)
+      }
+    })
     const source = cardsFor(deck.id)
     const longest = source.reduce((best, text, i) => text.length > source[best].length ? i : best, 0)
     await page.goto(`${deck.link}#${deck.id}/card-${longest + 1}`)
@@ -55,6 +62,7 @@ for (const deck of decks) {
       viewportWidth: innerWidth,
       cardWidth: getComputedStyle(card).width,
       transform: getComputedStyle(card).transform,
+      deckTransform: getComputedStyle(document.querySelector('#deck')).transform,
       deck: document.querySelector('#deck').getBoundingClientRect().toJSON(),
     }))
     const details = JSON.stringify({ bounds, size, ...geometry })
@@ -121,4 +129,106 @@ test('Hammer drag dismisses one card in the swipe direction', async ({ page }) =
   await expect(page.locator(`#${id}`)).toHaveClass(/hide-left/)
   await expect(page.locator('#deck > .card[class*="hide-"]')).toHaveCount(1)
   await expect(visibleCard(page)).toHaveCount(1)
+})
+
+// Drive only JavaScript animation frames so scheduling and refresh-rate behavior
+// can be checked deterministically without depending on the runner's display.
+async function installAnimationClock(page) {
+  await page.addInitScript(() => {
+    let now = 0
+    let nextId = 0
+    let hidden = false
+    const callbacks = new Map()
+    Object.defineProperty(performance, 'now', { value: () => now })
+    Object.defineProperty(document, 'hidden', { get: () => hidden })
+    window.requestAnimationFrame = callback => {
+      const id = ++nextId
+      callbacks.set(id, callback)
+      return id
+    }
+    window.cancelAnimationFrame = id => callbacks.delete(id)
+    window.animationClock = {
+      get pending() { return callbacks.size },
+      flush(timestamp) {
+        now = timestamp
+        const frame = [...callbacks.values()]
+        callbacks.clear()
+        frame.forEach(callback => callback(timestamp))
+      },
+      setHidden(value) {
+        hidden = value
+        document.dispatchEvent(new Event('visibilitychange'))
+      },
+    }
+  })
+}
+
+test('input bursts render once per frame and the loop stops after settling', async ({ page }) => {
+  await installAnimationClock(page)
+  await page.goto('1.html')
+  const result = await page.evaluate(() => {
+    const deck = document.querySelector('#deck')
+    const before = deck.style.transform
+    for (let i = 0; i < 100; i++) {
+      window.dispatchEvent(new MouseEvent('mousemove', { clientX: innerWidth / 4, clientY: innerHeight / 4 }))
+    }
+    const immediate = deck.style.transform
+    const pending = animationClock.pending
+    animationClock.flush(1000 / 60)
+    const firstFrame = deck.style.transform
+    for (let i = 2; i <= 200; i++) animationClock.flush(i * 1000 / 60)
+    const settledPending = animationClock.pending
+    const settled = deck.style.transform
+    window.dispatchEvent(new WheelEvent('wheel', { deltaY: 80 }))
+    const beforeNextFrame = deck.style.transform
+    const restartedPending = animationClock.pending
+    animationClock.flush(201 * 1000 / 60)
+    return { before, immediate, pending, firstFrame, settledPending, settled, beforeNextFrame, restartedPending, afterNextFrame: deck.style.transform }
+  })
+  expect(result.immediate).toBe(result.before)
+  expect(result.pending).toBe(1)
+  expect(result.firstFrame).not.toBe(result.before)
+  expect(result.settledPending).toBe(0)
+  expect(result.beforeNextFrame).toBe(result.settled)
+  expect(result.restartedPending).toBe(1)
+  expect(result.afterNextFrame).not.toBe(result.settled)
+})
+
+test('rotation smoothing follows elapsed time at 60 and 144 Hz', async ({ page }) => {
+  await installAnimationClock(page)
+  const samples = []
+  for (const hz of [60, 144]) {
+    await page.goto('1.html')
+    samples.push(await page.evaluate(hz => {
+      window.dispatchEvent(new MouseEvent('mousemove', { clientX: innerWidth / 4, clientY: innerHeight / 4 }))
+      for (let frame = 1; frame <= hz / 2; frame++) animationClock.flush(frame * 1000 / hz)
+      return [...new DOMMatrix(document.querySelector('#deck').style.transform).toFloat64Array()]
+    }, hz))
+  }
+  expect(samples[0][6]).not.toBe(0)
+  samples[0].forEach((value, index) => expect(value).toBeCloseTo(samples[1][index], 6))
+})
+
+test('hidden tabs pause the loop and resume without counting hidden time', async ({ page }) => {
+  await installAnimationClock(page)
+  await page.goto('1.html')
+  const result = await page.evaluate(() => {
+    const deck = document.querySelector('#deck')
+    window.dispatchEvent(new WheelEvent('wheel', { deltaY: 800 }))
+    animationClock.flush(1000 / 60)
+    const before = new DOMMatrix(deck.style.transform).m43
+    animationClock.setHidden(true)
+    const hiddenPending = animationClock.pending
+    animationClock.flush(10000)
+    const hidden = new DOMMatrix(deck.style.transform).m43
+    animationClock.setHidden(false)
+    const resumedPending = animationClock.pending
+    animationClock.flush(10000 + 1000 / 60)
+    return { before, hidden, hiddenPending, resumedPending, resumed: new DOMMatrix(deck.style.transform).m43 }
+  })
+  expect(result.hiddenPending).toBe(0)
+  expect(result.hidden).toBe(result.before)
+  expect(result.resumedPending).toBe(1)
+  expect(result.resumed).toBeGreaterThan(result.before)
+  expect(result.resumed).toBeLessThan(50)
 })
